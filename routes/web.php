@@ -26,3 +26,4 @@ Route::get('/files/new', 'FileController@create')->name("file.create");
 Route::put('/files', 'FileController@store')->name('file.store');
 Route::get('/files/{file_id}', 'FileController@show')->name("file.show");
 Route::delete('/files/{file_id}', 'FileController@destroy')->name("file.delete");
+Route::get('/files/{file_id}/delete', 'FileController@requestDestroy')->name("file.request.delete");

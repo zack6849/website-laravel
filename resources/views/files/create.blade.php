@@ -5,10 +5,12 @@
 @section('content')
     <div class="container-fluid" id="pageContent">
         <div class="container" style="padding-top: 4rem; padding-bottom: 4rem;">
-            @if (session('error'))
+            @if ($errors->any())
+                @foreach ($errors->all() as $error)
                 <div class="alert alert-danger">
-                    {{ session('error') }}
+                    {{ $error }}
                 </div>
+                @endforeach
             @endif
             <h1>Upload File&nbsp;<i class="fas fa-file"></i></h1>
             <form action="{{ route('file.store') }}" method="post" enctype="multipart/form-data">

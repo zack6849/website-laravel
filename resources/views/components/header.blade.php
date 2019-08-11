@@ -27,14 +27,18 @@
                         <i class="fas fa-code"></i>Code
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdownCode">
-                        <a class="dropdown-item" target="_blank" rel="noopener"
-                           href="https://stackoverflow.com/users/1932789/zack6849"><i class="fab fa-stack-overflow"></i>StackOverflow</a>
-                        <a class="dropdown-item" target="_blank" rel="noopener" href="https://github.com/zack6849"><i
-                                class="fab fa-github"></i>Github</a>
-                        <a class="dropdown-item" target="_blank" rel="noopener" href="https://gitlab.com/zack6849"><i
-                                class="fab fa-gitlab"></i>Gitlab</a>
-                        <a class="dropdown-item" target="_blank" rel="noopener" href="https://bitbucket.org/zack6849"><i
-                                class="fab fa-bitbucket"></i>BitBucket</a>
+                        <a class="dropdown-item" target="_blank" rel="noopener" href="https://stackoverflow.com/users/1932789/zack6849">
+                            <i class="fab fa-stack-overflow"></i>StackOverflow
+                        </a>
+                        <a class="dropdown-item" target="_blank" rel="noopener" href="https://github.com/zack6849">
+                            <i class="fab fa-github"></i>Github
+                        </a>
+                        <a class="dropdown-item" target="_blank" rel="noopener" href="https://gitlab.com/zack6849">
+                            <i class="fab fa-gitlab"></i>Gitlab
+                        </a>
+                        <a class="dropdown-item" target="_blank" rel="noopener" href="https://bitbucket.org/zack6849">
+                            <i class="fab fa-bitbucket"></i>BitBucket
+                        </a>
                     </div>
                 </div>
                 <div class="nav-item dropdown">

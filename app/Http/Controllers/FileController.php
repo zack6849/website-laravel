@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\File;
+use App\Http\Requests\UploadFileRequest;
 use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use function foo\func;
 
 class FileController extends Controller
 {
@@ -40,27 +41,19 @@ class FileController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(UploadFileRequest $request)
     {
-        if(!$request->hasFile('file')){
-            return redirect(route('file.create'))->with('error', 'No file provided');
-        }
-        if(!$request->file('file')->isValid()){
-            return redirect(route('file.create'))->with('error', 'Failed to save file, invalid file.');
-        }
-
         $uploaded_file = $request->file("file");
         $name = $uploaded_file->getClientOriginalName();
-        while(File::whereOriginalFilename($name)->exists()){
-            $name = Str::random(16) . '' . \Illuminate\Support\Facades\File::extension($uploaded_file->getClientOriginalName());
+        while (File::whereOriginalFilename($name)->exists()) {
+            $name = implode(".", [Str::random(16),  $uploaded_file->getClientOriginalExtension()]);
         }
-
         $file = new File();
-        $file->file_location =  $uploaded_file->store('public/user_uploads');
-        $file->filename = str_replace("public/user_uploads/", '', $file->file_location);
+        $file->file_location = $uploaded_file->storeAs(config('upload.storage.path'), $name);
+        $file->filename = str_replace(config('upload.storage.path') . DIRECTORY_SEPARATOR, '', $file->file_location);
         $file->original_filename = $name;
         $file->mime = $uploaded_file->getMimeType();
         $file->user_id = auth()->user()->id;
@@ -75,12 +68,12 @@ class FileController extends Controller
      * @param  string  $location
      * @return \Illuminate\Http\Response
      */
-    public function show($location)
+    public function show($filename)
     {
-        $file = File::whereFilename($location)->firstOrFail();
-        $fs =  Storage::getDriver();
+        $file = File::whereFilename($filename)->firstOrFail();
+        $fs = Storage::getDriver();
         $stream = $fs->readStream($file->file_location);
-        return response()->stream(function () use ($stream){
+        return response()->stream(function () use ($stream) {
             fpassthru($stream);
         }, 200, [
             'Content-Type' => $file->mime,
@@ -91,11 +84,48 @@ class FileController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy($id)
     {
-        //
+        /** @var User $user */
+        $file = auth()->user()->files()->findOrFail($id);
+        $success = true;
+        if (Storage::exists($file->file_location)) {
+            $success = Storage::delete($file->file_location);
+        }
+        $success = $success && $file->delete();
+        if ($success) {
+            return Redirect::back()->with('status', 'Your file was deleted!');
+        }
+        return Redirect::back()->with('status', 'File deletion failed :(');
+    }
+
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param Request $request
+     * @param int $id
+     * @return \Illuminate\Http\RedirectResponse
+     * @throws \Exception
+     */
+    public function requestDestroy(Request $request, int $id)
+    {
+        if (!$request->hasValidSignature()) {
+            abort(401);
+        }
+        /** @var User $user */
+        $file = auth()->user()->files()->findOrFail($id);
+        $success = true;
+        if (Storage::exists($file->file_location)) {
+            $success = Storage::delete($file->file_location);
+        }
+        $success = $success && $file->delete();
+        if ($success) {
+            return Redirect::back()->with('status', 'Your file was deleted!');
+        }
+        return Redirect::back()->with('status', 'File deletion failed :(');
     }
 }

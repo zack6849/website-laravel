@@ -14,6 +14,15 @@
         </div>
         <div class="row">
             <div class="col">
+                @if(Session::has('status'))
+                    <div class="alert alert-info" role="alert">
+                        {{ Session::get('status') }}
+                    </div>
+                @endif
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
                 <span>Showing {{$files->firstItem()}} - {{$files->lastItem()}} of {{auth()->user()->files()->count()}}</span>
             </div>
             <div class="col">
@@ -45,10 +54,12 @@
                     @foreach($files as $file)
                         <tr>
                             <td>{{$file->id}}</td>
-                            <td><a href="{{route('file.show', ['file_id' => $file->filename])}}">{{$file->original_filename}}</a></td>
+                            <td>
+                                <a href="{{route('file.show', ['file_location' => $file->filename])}}">{{$file->original_filename}}</a>
+                            </td>
                             <td>{{$file->mime}}</td>
                             <td>
-                                <a hre="" class="btn btn-danger"><i class="fa fa-trash"></i> Delete</a>
+                                <a href="{{URL::temporarySignedRoute('file.request.delete', now()->addHour(), ['file_id' => $file->id])}}" class="btn btn-outline-danger"><i class="fa fa-trash"></i> Delete</a>
                             </td>
                         </tr>
                     @endforeach
@@ -56,7 +67,7 @@
                 </table>
             </div>
         </div>
-              <div class="row">
+        <div class="row">
             <div class="col">
                 <span>Showing {{$files->firstItem()}} - {{$files->lastItem()}} of {{auth()->user()->files()->count()}}</span>
             </div>
