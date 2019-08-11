@@ -27,7 +27,7 @@ class FileController extends Controller
     {
         /** @var User $user */
         $user = auth()->user();
-        return view('files.index', ['files' => $user->files()->orderBy('date_created', 'desc')->paginate(15)]);
+        return view('files.index', ['files' => $user->files()->orderBy('created_at', 'desc')->paginate(15)]);
     }
 
     /**
