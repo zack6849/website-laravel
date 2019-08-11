@@ -1,7 +1,7 @@
 @servers(['production' => 'zack@zack6849.com'])
 
 @setup
-$repo = 'git@github.com:zack6849/website-laravel.git';
+$repo = 'https://github.com/zack6849/website-laravel.git';
 $appDir = '/home/zack/site';
 $branch = 'master';
 
@@ -15,6 +15,10 @@ $serve = $appDir . '/source';
 $env = $appDir . '/.env';
 $storage = $appDir . '/storage';
 @endsetup
+
+@story('test')
+debug
+@endstory()
 
 @story('deploy')
 git
@@ -34,9 +38,9 @@ rm -rf {{ $deployment }}/storage
 ln -nfs {{ $env }} {{ $deployment }}/.env
 
 ln -nfs {{ $storage }} {{ $deployment }}/storage
-yarn install
+npm install
 composer install --prefer-dist
-yarn run production
+npm run production
 php ./artisan migrate --force
 @endtask
 
@@ -44,4 +48,12 @@ php ./artisan migrate --force
 cd {{ $deployment }}
 
 ln -nfs {{ $deployment }} {{ $serve }}
+@endtask
+
+
+@task('debug', ['on' => 'production'])
+echo $PATH
+echo $SHELL
+whatis composer
+whereis composer
 @endtask
