@@ -25,7 +25,9 @@ class FileController extends Controller
      */
     public function index()
     {
-        return view('files.index', ['files' => auth()->user()->files()->paginate(15)]);
+        /** @var User $user */
+        $user = auth()->user();
+        return view('files.index', ['files' => $user->files()->orderBy('date_created', 'desc')->paginate(15)]);
     }
 
     /**
@@ -57,6 +59,7 @@ class FileController extends Controller
         $file->original_filename = $name;
         $file->mime = $uploaded_file->getMimeType();
         $file->user_id = auth()->user()->id;
+        $file->size = Storage::size($file->file_location);
         $file->save();
         return redirect(route('file.index'));
     }

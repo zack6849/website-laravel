@@ -26,7 +26,7 @@ class AddApiKeyToUsers extends Migration
     public function down()
     {
         Schema::table('users', function (Blueprint $table) {
-            //
+            $table->removeColumn("api_token");
         });
     }
 }

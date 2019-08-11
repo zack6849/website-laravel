@@ -39,6 +39,8 @@ class UploadScan extends Command
      */
     public function handle()
     {
+        $real_path = Storage::path(config('upload.storage.path'));
+        $this->info("Scanning $real_path for new uploads...");
         $files = Storage::files(config("upload.storage.path"));
         $existing_files = File::all()->pluck('file_location')->all();
         $new_files = array_diff($files, $existing_files);
@@ -53,8 +55,10 @@ class UploadScan extends Command
             $file->mime = Storage::mimeType($file_path);
             $file->created_at = Storage::lastModified($file_name);
             $file->updated_at = Storage::lastModified($file_name);
+            $file->size = Storage::size($file_name);
             $file->filename = $file_basename;
             $file->save();
+            $this->info("- Added $file_path to the database");
         }
         return true;
     }
