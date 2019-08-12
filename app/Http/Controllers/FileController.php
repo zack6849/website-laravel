@@ -30,6 +30,10 @@ class FileController extends Controller
         return view('files.index', ['files' => $user->files()->orderBy('created_at', 'desc')->paginate(15)]);
     }
 
+    public function ajaxIndex(){
+        return datatables()->of(auth()->user()->files())->toJson();
+    }
+
     /**
      * Show the form for creating a new resource.
      *

@@ -23,59 +23,23 @@
         </div>
         <div class="row">
             <div class="col">
-                <span>Showing {{$files->firstItem()}} - {{$files->lastItem()}} of {{auth()->user()->files()->count()}}</span>
-            </div>
-            <div class="col">
-                <div class="input-group mb-3">
-                    <input type="text" class="form-control" placeholder="Search Files..." aria-label="Search Files..." aria-describedby="button-addon2">
-                    <div class="input-group-append">
-                        <button class="btn btn-outline-info" type="button" id="button-addon2">Search</button>
-                    </div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="float-right">
-                    {{ $files->links() }}
-                </div>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <table class="table table-sm table-striped table-bordered table-hover">
+                <table id="files_list" class="table table-sm table-striped table-bordered table-hover" data-src="{{route('file.ajax.index')}}">
                     <thead class="thead-dark">
                     <tr>
                         <th>ID</th>
                         <th>File</th>
-                        <th>Mime Type</th>
-                        <th>Actions</th>
+                        <th>Created At</th>
                     </tr>
                     </thead>
                     <tbody>
-                    @foreach($files as $file)
-                        <tr>
-                            <td>{{$file->id}}</td>
-                            <td>
-                                <a href="{{route('file.show', ['file_location' => $file->filename])}}">{{$file->original_filename}}</a>
-                            </td>
-                            <td>{{$file->mime}}</td>
-                            <td>
-                                <a href="{{URL::temporarySignedRoute('file.request.delete', now()->addHour(), ['file_id' => $file->id])}}" class="btn btn-outline-danger"><i class="fa fa-trash"></i> Delete</a>
-                            </td>
-                        </tr>
-                    @endforeach
+
                     </tbody>
                 </table>
             </div>
         </div>
-        <div class="row">
-            <div class="col">
-                <span>Showing {{$files->firstItem()}} - {{$files->lastItem()}} of {{auth()->user()->files()->count()}}</span>
-            </div>
-            <div class="col">
-                <div class="float-right">
-                    {{ $files->links() }}
-                </div>
-            </div>
-        </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script src="{{mix('js/files.js')}}"></script>
+@endpush

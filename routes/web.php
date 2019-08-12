@@ -22,6 +22,7 @@ Route::get('logout', ['as' => 'logout', 'uses' => 'Auth\LoginController@logout']
 
 
 Route::get('/files', 'FileController@index')->name("file.index");
+Route::post('/ajax/files', 'FileController@ajaxIndex')->name("file.ajax.index");
 Route::get('/files/new', 'FileController@create')->name("file.create");
 Route::put('/files', 'FileController@store')->name('file.store');
 Route::get('/files/{file_id}', 'FileController@show')->name("file.show");
