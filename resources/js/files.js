@@ -8,8 +8,8 @@ $("#files_list").DataTable({
     columns: [
         { data: 'id', name: 'file id' },
         { data: 'filename', name: 'filename' },
-        { data: 'created_at', name: 'created_at' },
-        { data: 'actions', name: 'actions', orderable: false, searchable: false},
+        { data: 'created_at', name: 'created_at', width: "20%" },
+        { data: 'actions', name: 'actions', orderable: false, searchable: false, width: "20%"},
     ],
     columnDefs: [
         {
