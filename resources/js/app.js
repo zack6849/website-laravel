@@ -3,8 +3,8 @@
  * includes Vue and other libraries. It is a great starting point when
  * building robust, powerful web applications using Vue and Laravel.
  */
-
-require('jquery/dist/jquery.min');
-var $ = require("jquery");
+require("./bootstrap");
+require("datatables.net");
+require("datatables.net-bs4");
 require('@fortawesome/fontawesome-free/js/all');
 
