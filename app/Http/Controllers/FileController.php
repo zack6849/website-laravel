@@ -33,7 +33,7 @@ class FileController extends Controller
     public function ajaxIndex(){
         /** @var User $user */
         $user = auth()->user();
-        return DataTables::eloquent($user->files())->addColumn('delete_url', function(File $file){
+        return DataTables::eloquent($user->files()->orderBy('created_at', 'desc'))->addColumn('delete_url', function(File $file){
             return  URL::temporarySignedRoute('file.request.delete', now()->addMinutes(10), ['file_id' => $file->id]);
         })->addColumn('view_url', function($file){
             return route('file.show', ['file_id' => $file->filename]);
