@@ -5,23 +5,23 @@ namespace App\Http\Controllers;
 use App\File;
 use App\Http\Requests\UploadFileRequest;
 use App\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
+use League\Flysystem\FileNotFoundException;
+use Yajra\DataTables\Facades\DataTables;
 
 class FileController extends Controller
 {
 
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
-
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function index()
     {
@@ -31,13 +31,19 @@ class FileController extends Controller
     }
 
     public function ajaxIndex(){
-        return datatables()->of(auth()->user()->files())->toJson();
+        /** @var User $user */
+        $user = auth()->user();
+        return DataTables::eloquent($user->files())->addColumn('delete_url', function(File $file){
+            return  URL::temporarySignedRoute('file.request.delete', now()->addMinutes(10), ['file_id' => $file->id]);
+        })->addColumn('view_url', function($file){
+            return route('file.show', ['file_id' => $file->filename]);
+        })->toJson();
     }
 
     /**
      * Show the form for creating a new resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function create()
     {
@@ -47,8 +53,8 @@ class FileController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
+     * @param UploadFileRequest $request
+     * @return Response
      */
     public function store(UploadFileRequest $request)
     {
@@ -68,12 +74,38 @@ class FileController extends Controller
         return redirect(route('file.index'));
     }
 
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param UploadFileRequest $request
+     * @return array
+     */
+    public function api_store(UploadFileRequest $request)
+    {
+        $user = auth()->user();
+        $uploaded_file = $request->file("file");
+        $name = $uploaded_file->getClientOriginalName();
+        while (File::whereOriginalFilename($name)->exists()) {
+            $name = implode(".", [Str::random(16),  $uploaded_file->getClientOriginalExtension()]);
+        }
+        $file = new File();
+        $file->file_location = $uploaded_file->storeAs(config('upload.storage.path'), $name);
+        $file->filename = str_replace(config('upload.storage.path') . DIRECTORY_SEPARATOR, '', $file->file_location);
+        $file->original_filename = $name;
+        $file->mime = $uploaded_file->getMimeType();
+        $file->user_id = $user->id;
+        $file->size = Storage::size($file->file_location);
+        $file->save();
+        return ['file' => $file, 'view_url' => route('file.show', ['file' => $file->filename]), 'delete_url' => URL::signedRoute('file.request.delete', ['file' => $file->id])];
+    }
+
 
     /**
      * Display the specified resource.
      *
-     * @param  string  $location
-     * @return \Illuminate\Http\Response
+     * @param $filename
+     * @return Response
+     * @throws FileNotFoundException
      */
     public function show($filename)
     {
@@ -92,7 +124,7 @@ class FileController extends Controller
      * Remove the specified resource from storage.
      *
      * @param int $id
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      */
     public function destroy($id)
     {
@@ -115,7 +147,7 @@ class FileController extends Controller
      *
      * @param Request $request
      * @param int $id
-     * @return \Illuminate\Http\RedirectResponse
+     * @return RedirectResponse
      * @throws \Exception
      */
     public function requestDestroy(Request $request, int $id)

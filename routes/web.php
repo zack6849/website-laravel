@@ -21,10 +21,14 @@ Auth::routes(['register' => false]);
 Route::get('logout', ['as' => 'logout', 'uses' => 'Auth\LoginController@logout']);
 
 
-Route::get('/files', 'FileController@index')->name("file.index");
-Route::post('/ajax/files', 'FileController@ajaxIndex')->name("file.ajax.index");
-Route::get('/files/new', 'FileController@create')->name("file.create");
-Route::put('/files', 'FileController@store')->name('file.store');
-Route::get('/files/{file_id}', 'FileController@show')->name("file.show");
-Route::delete('/files/{file_id}', 'FileController@destroy')->name("file.delete");
-Route::get('/files/{file_id}/delete', 'FileController@requestDestroy')->name("file.request.delete");
+Route::get('/files', 'FileController@index')->name("file.index")->middleware('auth');
+Route::post('/ajax/files', 'FileController@ajaxIndex')->name("file.ajax.index")->middleware('auth');
+Route::get('/files/new', 'FileController@create')->name("file.create")->middleware('auth');
+Route::put('/files', 'FileController@store')->name('file.store')->middleware('auth');
+Route::get('/files/{file_name}', 'FileController@show')->name("file.show");
+//same thing as above, for backwards compat, moved permanently, for search indexers, I guess...
+Route::get('/uploads/{file_name}', function ($file_name){
+   return redirect(route('file.show', ['file_name' => $file_name]), 301);
+});
+Route::delete('/files/{file_id}', 'FileController@destroy')->name("file.delete")->middleware('auth');
+Route::get('/files/{file_id}/delete', 'FileController@requestDestroy')->name("file.request.delete")->middleware('auth');

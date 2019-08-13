@@ -13,6 +13,5 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
-});
+Route::middleware("auth:api")->post("/files", "FileController@api_store")->name("api.file.store");
+Route::middleware("auth:api")->delete("/files/{file_id}", "FileController@delete")->name("api.file.delete");

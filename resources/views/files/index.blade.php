@@ -29,6 +29,7 @@
                         <th>ID</th>
                         <th>File</th>
                         <th>Created At</th>
+                        <th>Actions</th>
                     </tr>
                     </thead>
                     <tbody>
