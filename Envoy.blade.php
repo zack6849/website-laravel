@@ -42,6 +42,8 @@ npm install
 composer install --prefer-dist
 npm run production
 php ./artisan migrate --force
+echo "Deployment complete!"
+echo "You may need to restart PHP-FPM if it's being used"
 @endtask
 
 @task('live', ['on' => 'production'])
