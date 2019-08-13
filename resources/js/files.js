@@ -17,7 +17,7 @@ $("#files_list").DataTable({
             "render": function(data, type, row){
                 var deletion_url = row.delete_url;
                 var view_url = row.view_url;
-                return "<a href='" + view_url + "'><button class='btn btn-info mr-2'>View</button></a><a href='" + deletion_url + "'><button class='btn btn-danger'>Delete</button></a>";
+                return "<a href='" + view_url + "' target='_blank'><button class='btn btn-info mr-2'>View</button></a><a href='" + deletion_url + "'><button class='btn btn-danger'>Delete</button></a>";
             },
             "targets": 3
         }
