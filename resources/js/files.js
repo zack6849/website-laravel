@@ -5,6 +5,7 @@ $("#files_list").DataTable({
         url: $("#files_list").data('src'),
         "type": "POST"
     },
+    order: [[ 2, "desc" ]],
     columns: [
         { data: 'id', name: 'file id' },
         { data: 'filename', name: 'filename' },
