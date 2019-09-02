@@ -48,4 +48,14 @@ class Handler extends ExceptionHandler
     {
         return parent::render($request, $exception);
     }
+
+    //todo: remove this and upgrade to laravel 6 soon, datatables is holding out for laravel6 official release.
+    protected function whoopsHandler()
+    {
+        try {
+            return app(\Whoops\Handler\HandlerInterface::class);
+        } catch (\Illuminate\Contracts\Container\BindingResolutionException $e) {
+            return (new \Illuminate\Foundation\Exceptions\WhoopsHandler)->forDebug();
+        }
+    }
 }

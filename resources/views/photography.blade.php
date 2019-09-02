@@ -25,7 +25,4 @@
         </div>
     </div>
 @endsection
-@push('scripts')
-    <script src="{{mix('js/photos.js')}}"></script>
-@endpush
 

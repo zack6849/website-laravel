@@ -57,7 +57,7 @@
             A maintained fork of <a href="https://github.com/michaelbonds/ship-station">michaelbonds/ship-station</a><br>
             Designed to programmatically access the ShipStation REST API via PHP with Guzzle
             <template slot="footer">
-                <i class="fab fa-github"></i>
+                <a href="https://github.com/zack6849/ship-station"><i class="fab fa-github"></i></a>
                 <a href="https://packagist.org/packages/zack6849/ship-station"><i class="fa fa-box"></i></a>
             </template>
         </project-card>
