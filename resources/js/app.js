@@ -11,7 +11,7 @@ require('@fortawesome/fontawesome-free/js/all');
 window.Vue = require('vue');
 
 Vue.component('example-component', require('./components/ExampleComponent.vue'));
-Vue.component('project-card', require('./components/ProjectCardcomponent.vue').default);
+Vue.component('project-card', require('./components/ProjectCardComponent.vue').default);
 Vue.component('photo-gallery', require('./components/PhotoGalleryComponent').default);
 Vue.component('photo', require('./components/PhotoComponent').default);
 const app = new Vue({
