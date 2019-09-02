@@ -8,3 +8,20 @@ require("datatables.net");
 require("datatables.net-bs4");
 require('@fortawesome/fontawesome-free/js/all');
 
+window.Vue = require('vue');
+
+Vue.component('example-component', require('./components/ExampleComponent.vue'));
+Vue.component('project-card', require('./components/ProjectCardcomponent.vue').default);
+Vue.component('photo-gallery', require('./components/PhotoGalleryComponent').default);
+Vue.component('photo', require('./components/PhotoComponent').default);
+const app = new Vue({
+    el: '#app',
+    data: {
+        shownav: false,
+    },
+    methods: {
+        toggle() {
+            this.shownav = !this.shownav
+        }
+    }
+});

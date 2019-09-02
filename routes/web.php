@@ -13,7 +13,12 @@
 
 Route::get('/', function () {
     return view('home');
-});
+})->name('home');
+
+//todo: this should probably be proper controllers
+Route::get('/photos', function (){
+    return view('photography');
+})->name('photography');
 
 Auth::routes(['register' => false]);
 

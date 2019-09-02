@@ -16,18 +16,14 @@ $env = $appDir . '/.env';
 $storage = $appDir . '/storage';
 @endsetup
 
-@story('test')
-debug
-@endstory()
-
 @story('deploy')
-git
-install
-live
+	git
+	install
+	live
 @endstory
 
 @task('git', ['on' => 'production'])
-git clone -b {{ $branch }} "{{ $repo }}" {{ $deployment }}
+	git clone -b {{ $branch }} "{{ $repo }}" {{ $deployment }}
 @endtask
 
 @task('install', ['on' => 'production'])

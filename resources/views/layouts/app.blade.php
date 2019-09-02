@@ -9,16 +9,18 @@
     @stack('styles')
 </head>
 <body>
-<div id="header">
-    @include('components.header')
-</div>
-<div id="content">
-    <div id="app">
-        @yield('content')
+<div id="app">
+    <div id="header">
+        @include('components.header')
     </div>
-</div>
-<div id="footer">
-    @include('components.footer')
+    <div id="content">
+        <div>
+            @yield('content')
+        </div>
+    </div>
+    <div id="footer">
+        @include('components.footer')
+    </div>
 </div>
 <script src="{{mix('js/app.js')}}"></script>
 @stack('scripts')
