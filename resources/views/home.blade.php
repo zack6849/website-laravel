@@ -27,7 +27,7 @@
             <project-card title="<i class='fab fa-magento text-orange-500'></i> Magento 2" image="{{asset('img/online_shopping_ga73.svg')}}">
                 I have extensive experience working with Magento 2, both Community and Enterprise Editions, and have created internal use modules for companies, enforcing business requirements and generating helpful marketing data
             </project-card>
-            <project-card title="<i class='fab fa-wordpress text-blue-500'></i> WordPress" image="{{asset('img/wordpress_utxt.svg')}}"">
+            <project-card title="<i class='fab fa-wordpress text-blue-500'></i> WordPress" image="{{asset('img/wordpress_utxt.svg')}}">
                 I spent bit of time engineering a wordpress based SaaS product for the restaurant and food service industry featuring online ordering and delivery quotes through postmates
             </project-card>
         </div>
