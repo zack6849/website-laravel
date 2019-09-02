@@ -13,8 +13,8 @@ require('laravel-mix-tailwind');
 
 mix.js('resources/js/app.js', 'public/js')
     .sass('resources/sass/app.scss', 'public/css')
-    .sass('resources/sass/index.scss', 'public/css')
     .sass("resources/sass/login.scss", 'public/css')
     .js("resources/js/files.js", 'public/js')
     .tailwind()
+
     .version();

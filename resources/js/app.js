@@ -5,7 +5,6 @@
  */
 require("./bootstrap");
 require("datatables.net");
-require("datatables.net-bs4");
 require('@fortawesome/fontawesome-free/js/all');
 
 window.Vue = require('vue');
