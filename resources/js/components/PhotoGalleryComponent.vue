@@ -1,7 +1,7 @@
 <template>
     <div class="photo-gallery-container">
         <div class="photo-gallery flex flex-wrap justify-between">
-            <photo v-if="photo.width_l >= 1024" v-for="photo in photos" v-bind:info="photo" />
+            <photo v-if="photo.width_l >= 1024" v-for="photo in photos" v-bind:key="photo.id" v-bind:info="photo" />
         </div>
     </div>
 </template>

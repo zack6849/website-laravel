@@ -1,3 +1,4 @@
+require("datatables.net");
 $("#files_list").DataTable({
     responsive: true,
     autowidth: true,
