@@ -1,6 +1,11 @@
 /node_modules
 /public/hot
 /public/storage
+/public/css
+/public/js
+/public/**/vendor
+/public/build
+/public/mix-manifest.json
 /storage/*.key
 /vendor
 .env
@@ -10,3 +15,10 @@ Homestead.json
 Homestead.yaml
 npm-debug.log
 yarn-error.log
+.phpstorm.meta.php
+_ide_helper.php
+_ide_helper_models.php
+.idea/
+laradock/
+laradock/*.bat
+laradock/*.sh
