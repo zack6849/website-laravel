@@ -6,13 +6,19 @@
     <div class="hidden lg:visible lg:block mr-10">
         <img src="{{asset('img/profile.jpg')}}" class="rounded-full w-48">
     </div>
-    <div class="col-9">
+    <div>
         <h1 class="font-light text-5xl">Hello There</h1>
         <p>
             I'm Zack, I'm a {{Carbon\Carbon::create(1997, 7 , 24)->diffInYears(Carbon\Carbon::now())}} year old Web Developer, Java Developer and Hobbyist Photographer from the Tampa Bay Area.<br>
             I like to solve problems and take pictures. This is my website / portfolio / dumping ground.<br>
             Nice to meet you.
         </p>
+        <div class="flex justify-around my-6">
+            <a href="https://github.com/zack6849"><div class="bg-purple-600 rounded-b py-4 px-2 text-white leading-none shadow"> <i class="fab fa-github"></i> GitHub</div></a>
+            <a href="https://stackoverflow.com/users/1932789/zack6849"><div class="bg-orange-600 rounded-b py-4 px-2 text-white leading-none shadow"><i class="fab fa-stack-overflow"></i> StackOverflow</div></a>
+            <a href="https://keybase.io/zack6849"><div class="bg-blue-500 rounded-b py-4 px-2 text-white leading-none shadow"><i class="fab fa-keybase"></i> Keybase</div></a>
+            <a href="https://www.linkedin.com/in/zack6849/"><div class="bg-blue-800 rounded-b py-4 px-2 text-white leading-none shadow"><i class="fab fa-linkedin"></i> LinkedIn</div></a>
+        </div>
     </div>
 </div>
 <hr>

@@ -13,13 +13,10 @@
             <div  :class="shownav ? 'block': 'hidden'" class="w-full block flex-grow lg:flex lg:items-center lg:w-auto">
                 <div class="text-sm lg:flex-grow items-center">
                     <a href="{{route('home')}}" class="block mt-4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">
-                        Code
+                        Home
                     </a>
                     <a href="{{route('photography')}}" class="block mt-4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">
                         Photography
-                    </a>
-                    <a href="" class="block mt-4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white">
-                        Contact Me
                     </a>
                 </div>
             </div>
