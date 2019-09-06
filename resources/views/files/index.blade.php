@@ -17,8 +17,11 @@
                 @endif
             </div>
         </div>
+        <!-- hack to prevent purecss from deleting datatables classes
+        <div class="dataTable no-footer dataTables_length dataTables_wrapper dataTables_length dataTables_filter dataTables_info dataTables_paginate paging_simple_numbers files_list_previous paginate_button next paginate_button sorting sorting_desc sorting_disabled  current  hidden"></div>
+        -->
         <div>
-            <table id="files_list" class="table table-sm table-striped table-bordered table-hover" data-src="{{route('file.ajax.index')}}">
+            <table id="files_list" class="" data-src="{{route('file.ajax.index')}}">
                 <thead class="thead-dark">
                 <tr>
                     <th>ID</th>
