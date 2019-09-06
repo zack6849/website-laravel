@@ -3,8 +3,7 @@
 @section('title', 'New File Upload')
 
 @section('content')
-    <div class="container-fluid" id="pageContent">
-        <div class="container" style="padding-top: 4rem; padding-bottom: 4rem;">
+    <div class="container mx-auto my-40 flex-col justify-center">
             @if ($errors->any())
                 @foreach ($errors->all() as $error)
                 <div class="alert alert-danger">
@@ -12,16 +11,15 @@
                 </div>
                 @endforeach
             @endif
-            <h1>Upload File&nbsp;<i class="fas fa-file"></i></h1>
+            <h1 class="text-2xl font-bold">Upload File&nbsp;<i class="fas fa-file"></i></h1>
             <form action="{{ route('file.store') }}" method="post" enctype="multipart/form-data">
                 @csrf
                 @method('put')
-                <div class="form-group">
+                <div class="my-4">
                     <label for="exampleFormControlFile1">Select a file for upload</label>
                     <input type="file" name="file" class="form-control-file" id="exampleFormControlFile1">
                 </div>
-                <button type="submit" class="btn btn-primary">Submit</button>
+                <button type="submit" class="bg-purple-600 rounded py-4 px-2 text-white leading-none shadow">Upload</button>
             </form>
         </div>
-    </div>
 @endsection

@@ -14,10 +14,10 @@
             Nice to meet you.
         </p>
         <div class="flex justify-around my-6">
-            <a target="_blank" href="https://github.com/zack6849"><div class="bg-purple-600 rounded-b py-4 px-2 text-white leading-none shadow"> <i class="fab fa-github"></i> GitHub</div></a>
-            <a target="_blank" href="https://stackoverflow.com/users/1932789/zack6849"><div class="bg-orange-600 rounded-b py-4 px-2 text-white leading-none shadow"><i class="fab fa-stack-overflow"></i> StackOverflow</div></a>
-            <a target="_blank" href="https://keybase.io/zack6849"><div class="bg-blue-500 rounded-b py-4 px-2 text-white leading-none shadow"><i class="fab fa-keybase"></i> Keybase</div></a>
-            <a target="_blank" href="https://www.linkedin.com/in/zack6849/"><div class="bg-blue-800 rounded-b py-4 px-2 text-white leading-none shadow"><i class="fab fa-linkedin"></i> LinkedIn</div></a>
+            <a target="_blank" href="https://github.com/zack6849"><div class="bg-purple-600 rounded py-4 px-2 text-white leading-none shadow"> <i class="fab fa-github"></i> GitHub</div></a>
+            <a target="_blank" href="https://stackoverflow.com/users/1932789/zack6849"><div class="bg-orange-600 rounded py-4 px-2 text-white leading-none shadow"><i class="fab fa-stack-overflow"></i> StackOverflow</div></a>
+            <a target="_blank" href="https://keybase.io/zack6849"><div class="bg-blue-500 rounded py-4 px-2 text-white leading-none shadow"><i class="fab fa-keybase"></i> Keybase</div></a>
+            <a target="_blank" href="https://www.linkedin.com/in/zack6849/"><div class="bg-blue-800 rounded py-4 px-2 text-white leading-none shadow"><i class="fab fa-linkedin"></i> LinkedIn</div></a>
         </div>
     </div>
 </div>

@@ -19,6 +19,21 @@
                         Photography
                     </a>
                 </div>
+                <div class="items-end">
+                    @auth
+                        <a href="{{route('file.index')}}" class="block mt-4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">
+                            My Files
+                        </a>
+                        <a href="{{route('logout')}}" class="block mt-4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">
+                            Logout
+                        </a>
+                    @endauth
+                    @guest
+                        <a href="{{route('login')}}" class="block mt-4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">
+                            Login
+                        </a>
+                    @endguest
+                </div>
             </div>
         </div>
 
