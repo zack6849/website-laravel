@@ -28,6 +28,7 @@
         "datatables": "^1.10.18",
         "datatables.net": "^1.10.19",
         "datatables.net-bs4": "^1.10.19",
+        "popper.js": "^1.15.0",
         "tailwindcss": "^1.1.2"
     }
 }
