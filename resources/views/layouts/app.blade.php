@@ -8,15 +8,13 @@
     <link rel="stylesheet" href="{{mix('css/app.css')}}">
     @stack('styles')
 </head>
-<body>
+<body class="h-screen">
 <div id="app">
     <div id="header">
         @include('components.header')
     </div>
     <div id="content">
-        <div>
-            @yield('content')
-        </div>
+        @yield('content')
     </div>
     <div id="footer">
         @include('components.footer')

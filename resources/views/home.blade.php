@@ -7,17 +7,17 @@
         <img src="{{asset('img/profile.jpg')}}" class="rounded-full w-48">
     </div>
     <div>
-        <h1 class="font-light text-5xl">Hello There</h1>
-        <p>
+        <h1 class="font-light text-5xl p2">Hello There</h1>
+        <p class="p-2">
             I'm Zack, I'm a {{Carbon\Carbon::create(1997, 7 , 24)->diffInYears(Carbon\Carbon::now())}} year old Web Developer, Java Developer and Hobbyist Photographer from the Tampa Bay Area.<br>
             I like to solve problems and take pictures. This is my website / portfolio / dumping ground.<br>
             Nice to meet you.
         </p>
-        <div class="flex justify-around my-6">
-            <a target="_blank" href="https://github.com/zack6849"><div class="bg-purple-600 rounded py-4 px-2 text-white leading-none shadow"> <i class="fab fa-github"></i> GitHub</div></a>
-            <a target="_blank" href="https://stackoverflow.com/users/1932789/zack6849"><div class="bg-orange-600 rounded py-4 px-2 text-white leading-none shadow"><i class="fab fa-stack-overflow"></i> StackOverflow</div></a>
-            <a target="_blank" href="https://keybase.io/zack6849"><div class="bg-blue-500 rounded py-4 px-2 text-white leading-none shadow"><i class="fab fa-keybase"></i> Keybase</div></a>
-            <a target="_blank" href="https://www.linkedin.com/in/zack6849/"><div class="bg-blue-800 rounded py-4 px-2 text-white leading-none shadow"><i class="fab fa-linkedin"></i> LinkedIn</div></a>
+        <div class="flex flex-wrap justify-around my-6">
+            <a target="_blank" href="https://github.com/zack6849"><div class="bg-purple-600 rounded py-4 px-2 text-white leading-none shadow mr-1 mt-2"> <i class="fab fa-github"></i> GitHub</div></a>
+            <a target="_blank" href="https://stackoverflow.com/users/1932789/zack6849"><div class="bg-orange-600 rounded py-4 px-2 text-white leading-none shadow mr-1 mt-2"><i class="fab fa-stack-overflow"></i> StackOverflow</div></a>
+            <a target="_blank" href="https://keybase.io/zack6849"><div class="bg-blue-500 rounded py-4 px-2 text-white leading-none shadow mr-1 mt-2"><i class="fab fa-keybase"></i> Keybase</div></a>
+            <a target="_blank" href="https://www.linkedin.com/in/zack6849/"><div class="bg-blue-800 rounded py-4 px-2 text-white leading-none shadow mr-1 mt-2"><i class="fab fa-linkedin"></i> LinkedIn</div></a>
         </div>
     </div>
 </div>
@@ -36,8 +36,6 @@
             <project-card title="<i class='fab fa-wordpress text-blue-500'></i> WordPress" image="{{asset('img/wordpress_utxt.svg')}}">
                 I spent bit of time engineering a wordpress based SaaS product for the restaurant and food service industry featuring online ordering and delivery quotes through postmates
             </project-card>
-        </div>
-        <div class="flex justify-between mt-3 flex-wrap">
             <project-card title="<i class='fab fa-linux'></i> Linux" image={{asset('img/maintenance_cn7j.svg')}}>
                 I've been using Linux for years, both from a server administration and end user perspective, with a focus on security
             </project-card>
@@ -53,7 +51,7 @@
 <div class="container mx-auto my-5">
     <h3 class="text-3xl font-light">Open Source Projects</h3>
     <p class=" text-sm">Pretty much everything I do nowadays is for a company and not public, but here's a small collection of things I maintain or created at one point in time, in no particular order.</p>
-    <div class="flex justify-between mt-3">
+    <div class="flex flex-wrap justify-between">
         <project-card title="ShipStation PHP Wrapper" image={{asset('img/logistics_x4dc.svg')}}>
             A maintained fork of <a href="https://github.com/michaelbonds/ship-station">michaelbonds/ship-station</a><br>
             Designed to programmatically access the ShipStation REST API via PHP with Guzzle

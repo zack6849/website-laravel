@@ -1,5 +1,5 @@
 <template>
-    <div class="flex flex-1 flex-col border-2 border-gray-300 mr-5 rounded bg-white">
+    <div class="flex flex-col border-2 border-gray-300 m-2 rounded bg-white w-full sm:w-2/5 md:w-2/6 lg:w-1/4 xl:w-1/4">
         <b class="p-2" v-html="title"></b>
         <hr>
         <div class="flex-grow p-2">
