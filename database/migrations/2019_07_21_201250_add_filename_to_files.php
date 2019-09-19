@@ -14,7 +14,7 @@ class AddFilenameToFiles extends Migration
     public function up()
     {
         Schema::table('files', function (Blueprint $table) {
-            $table->string("filename");
+            $table->string("filename")->nullable();
         });
     }
 
