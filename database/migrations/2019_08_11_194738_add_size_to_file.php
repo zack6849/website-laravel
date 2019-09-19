@@ -14,7 +14,7 @@ class AddSizeToFile extends Migration
     public function up()
     {
         Schema::table('files', function (Blueprint $table) {
-            $table->bigInteger("size");
+            $table->bigInteger("size")->default(0);
         });
     }
 
