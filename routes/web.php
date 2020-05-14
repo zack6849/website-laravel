@@ -37,3 +37,5 @@ Route::get('/uploads/{file_name}', function ($file_name){
 });
 Route::delete('/files/{file_id}', 'FileController@destroy')->name("file.delete")->middleware('auth');
 Route::get('/files/{file_id}/delete', 'FileController@requestDestroy')->name("file.request.delete")->middleware('auth');
+
+Route::get('/lookup/{phone_number}', 'TwilioController@lookup')->middleware('auth');

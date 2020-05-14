@@ -9,11 +9,11 @@
     <div>
         <h1 class="font-light text-5xl p2">Hello There</h1>
         <p class="p-2">
-            I'm Zack, I'm a {{Carbon\Carbon::create(1997, 7 , 24)->diffInYears(Carbon\Carbon::now())}} year old Web Developer, Java Developer and Hobbyist Photographer from the Tampa Bay Area.<br>
+            I'm Zack, I'm a {{Carbon\Carbon::create(1997, 7 , 24)->diffInYears(Carbon\Carbon::now())}} year old Full-Stack Web Developer, Java Developer and Hobbyist Photographer from the Tampa Bay Area.<br>
             I like to solve problems and take pictures. This is my website / portfolio / dumping ground.<br>
             Nice to meet you.
         </p>
-        <div class="flex flex-wrap justify-around my-6">
+        <div class="flex flex-wrap flex-row items-center justify-around my-6 ">
             <a target="_blank" href="https://github.com/zack6849"><div class="bg-purple-600 rounded py-4 px-2 text-white leading-none shadow mr-1 mt-2"> <i class="fab fa-github"></i> GitHub</div></a>
             <a target="_blank" href="https://stackoverflow.com/users/1932789/zack6849"><div class="bg-orange-600 rounded py-4 px-2 text-white leading-none shadow mr-1 mt-2"><i class="fab fa-stack-overflow"></i> StackOverflow</div></a>
             <a target="_blank" href="https://keybase.io/zack6849"><div class="bg-blue-500 rounded py-4 px-2 text-white leading-none shadow mr-1 mt-2"><i class="fab fa-keybase"></i> Keybase</div></a>
@@ -22,29 +22,19 @@
     </div>
 </div>
 <hr>
+
 <div class="container-fluid  mt-5 pb-5" id="technasdologies">
     <div class="container mx-auto">
-        <h3 class="text-3xl font-light text-black">Technologies</h3>
-        <p class="text-sm">I've worked with a number of things, but these are the ones that are worth mentioning or the things I like to work with</p>
-        <div class="flex justify-between mt-3 flex-wrap">
-           <project-card title="<i class='fab fa-laravel text-red-500'></i> Laravel" image="{{asset('img/laravel_and_vue_59tp.svg')}}">
-                I've built a few internal projects in laravel, one of which is responsible for running the entire operation of a nation-wide utility billing company
-            </project-card>
-            <project-card title="<i class='fab fa-magento text-orange-500'></i> Magento 2" image="{{asset('img/online_shopping_ga73.svg')}}">
-                I have extensive experience working with Magento 2, both Community and Enterprise Editions, and have created internal use modules for companies, enforcing business requirements and generating helpful marketing data
-            </project-card>
-            <project-card title="<i class='fab fa-wordpress text-blue-500'></i> WordPress" image="{{asset('img/wordpress_utxt.svg')}}">
-                I spent bit of time engineering a wordpress based SaaS product for the restaurant and food service industry featuring online ordering and delivery quotes through postmates
-            </project-card>
-            <project-card title="<i class='fab fa-linux'></i> Linux" image={{asset('img/maintenance_cn7j.svg')}}>
-                I've been using Linux for years, both from a server administration and end user perspective, with a focus on security
-            </project-card>
-            <project-card title="<i class='fas fa-database text-blue-300'></i> MySQL" image={{asset('img/server_status_5pbv.svg')}}>
-                I've been using LAMP/LEMP as my primary development work for most of my career
-            </project-card>
-            <project-card title="<i class='fab fa-docker text-blue-800'></i> Docker" image={{asset('img/Container_ship_ok1c.svg')}}>
-                Containers are the future and reproducibility is incredibly important for verifying bugs and ensuring stability, I use docker day to day for development
-            </project-card>
+        <div class="flex flex-wrap justify-around">
+            <technology name="PHP" image="{{asset('img/logos/language/php.svg')}}"></technology>
+            <technology name="Linux" image="{{asset('img/logos/os/linux-tux.svg')}}"></technology>
+            <technology name="Laravel" image="{{asset('img/logos/platform/laravel.svg')}}"></technology>
+            <technology name="MySQL" image="{{asset('img/logos/technology/mysql.svg')}}"></technology>
+            <technology name="Magento 2 & 1" image="{{asset('img/logos/platform/magento-2.svg')}}"></technology>
+            <technology name="WordPress" image="{{asset('img/logos/platform/wordpress-blue.svg')}}"></technology>
+            <technology name="WooCommerce" image="{{asset('img/logos/platform/woocommerce-1.svg')}}"></technology>
+            <technology name="Java" image="{{asset('img/logos/language/java.svg')}}"></technology>
+            <technology name="Docker" image="{{asset('img/logos/technology/docker.svg')}}"></technology>
         </div>
     </div>
 </div>
