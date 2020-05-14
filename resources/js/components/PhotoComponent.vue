@@ -1,6 +1,6 @@
 <template>
-    <div class="photo-container m-4">
-        <div class="max-w-sm rounded overflow-hidden shadow-lg">
+    <div class="photo-container m-4 shadow-lg">
+        <div class="max-w-sm rounded overflow-hidden">
             <img @click="openFlickr" class="w-full cursor-pointer" v-bind:src="info.url_m" v-bind:alt="info.title">
             <div class="px-6 py-4">
                 <div class="font-bold text-xl mb-2" v-text="info.title"></div>
