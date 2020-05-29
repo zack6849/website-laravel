@@ -39,3 +39,4 @@ Route::delete('/files/{file_id}', 'FileController@destroy')->name("file.delete")
 Route::get('/files/{file_id}/delete', 'FileController@requestDestroy')->name("file.request.delete")->middleware('auth');
 
 Route::get('/lookup/{phone_number}', 'TwilioController@lookup')->middleware('auth');
+Route::get('/lookup/{phone_number}/raw', 'TwilioController@lookupRaw')->middleware('auth');

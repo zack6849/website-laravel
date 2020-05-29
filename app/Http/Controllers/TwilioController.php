@@ -46,4 +46,21 @@ class TwilioController extends Controller
             'associated_people' => $people_map
         ];
     }
+    
+    function lookupRaw(Request $request, $phone_number){
+        $cache_key = "lookups". md5($phone_number);
+        if(!Cache::has($cache_key)){
+            $client = new Client(config('twilio.sid'), config('twilio.token'));
+            $result = $client->lookups->v1->phoneNumbers($phone_number)->fetch([
+                'type' => ['carrier','caller-name'],
+                'addOns' => [
+                    'ekata_reverse_phone',
+                ]
+            ]);
+            $response = $result->toArray();
+            Cache::forever($cache_key, $response);
+        }
+
+        return Cache::get($cache_key);
+    }
 }
