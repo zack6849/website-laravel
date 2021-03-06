@@ -60,6 +60,6 @@ class UploadScan extends Command
             $file->save();
             $this->info("- Added $file_path to the database");
         }
-        return true;
+        return 1;
     }
 }

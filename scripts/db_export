@@ -1,0 +1,4 @@
+#!/bin/bash
+
+cd ~/Environments/readings/scripts/
+./db_dump uem

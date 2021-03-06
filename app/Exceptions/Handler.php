@@ -2,8 +2,8 @@
 
 namespace App\Exceptions;
 
-use Exception;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Throwable;
 
 class Handler extends ExceptionHandler
 {
@@ -29,10 +29,11 @@ class Handler extends ExceptionHandler
     /**
      * Report or log an exception.
      *
-     * @param  \Exception  $exception
+     * @param  Throwable  $exception
      * @return void
+     * @throws Throwable
      */
-    public function report(Exception $exception)
+    public function report(Throwable $exception)
     {
         parent::report($exception);
     }
@@ -44,18 +45,8 @@ class Handler extends ExceptionHandler
      * @param  \Exception  $exception
      * @return \Illuminate\Http\Response
      */
-    public function render($request, Exception $exception)
+    public function render($request, Throwable $exception)
     {
         return parent::render($request, $exception);
-    }
-
-    //todo: remove this and upgrade to laravel 6 soon, datatables is holding out for laravel6 official release.
-    protected function whoopsHandler()
-    {
-        try {
-            return app(\Whoops\Handler\HandlerInterface::class);
-        } catch (\Illuminate\Contracts\Container\BindingResolutionException $e) {
-            return (new \Illuminate\Foundation\Exceptions\WhoopsHandler)->forDebug();
-        }
     }
 }

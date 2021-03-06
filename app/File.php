@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -25,8 +26,22 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\File whereOriginalFilename($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\File whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\File whereUserId($value)
+ * @property string $filename
+ * @property int $size
+ * @property-read \App\User $user
+ * @method static \Illuminate\Database\Eloquent\Builder|File search($search)
+ * @method static \Illuminate\Database\Eloquent\Builder|File whereFilename($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|File whereSize($value)
  */
 class File extends Model
 {
-    //
+    public function user(){
+        return $this->belongsTo(User::class);
+    }
+    
+    public function scopeSearch(Builder $builder, $search){
+        return $builder->where('filename', 'like', "%$search%")
+            ->orWhere('original_filename', 'like', "%$search%")
+            ->orWhere('mime', 'like', "%$search%");
+    }
 }

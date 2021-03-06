@@ -31,6 +31,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
  * @method static \Illuminate\Database\Eloquent\Builder|\App\User wherePassword($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereRememberToken($value)
  * @method static \Illuminate\Database\Eloquent\Builder|\App\User whereUpdatedAt($value)
+ * @property string|null $api_token
+ * @property-read int|null $files_count
+ * @property-read int|null $notifications_count
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereApiToken($value)
  */
 class User extends Authenticatable
 {

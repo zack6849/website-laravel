@@ -12,24 +12,24 @@
             </div>
             <div  :class="shownav ? 'block': 'hidden'" class="w-full block flex-grow lg:flex lg:items-center lg:w-auto">
                 <div class="text-sm lg:flex-grow items-center">
-                    <a href="{{route('home')}}" class="block mt-4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">
+                    <a href="{{route('home')}}" class="block lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">
                         Home
                     </a>
-                    <a href="{{route('photography')}}" class="block mt-4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">
+                    <a href="{{route('photography')}}" class="block lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">
                         Photography
                     </a>
                 </div>
                 <div class="items-end">
                     @auth
-                        <a href="{{route('file.index')}}" class="block mt-4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">
+                        <a href="{{route('file.index')}}" class="block lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">
                             My Files
                         </a>
-                        <a href="{{route('logout')}}" class="block mt-4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">
+                        <a href="{{route('logout')}}" class="block lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">
                             Logout
                         </a>
                     @endauth
                     @guest
-                        <a href="{{route('login')}}" class="block mt-4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">
+                        <a href="{{route('login')}}" class="block 4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">
                             Login
                         </a>
                     @endguest

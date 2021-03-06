@@ -1,0 +1,17 @@
+#!/bin/bash
+
+source db_dump_config
+
+function run_command(){
+    echo "[EXEC] $1"
+    eval $1
+}
+
+run_command "ssh $DB_SERVER \"mysqldump -u $MYSQL_USERNAME --password='$MYSQL_PASSWORD' $1 > $FILENAME\""
+run_command "rsync $DB_SERVER:~/$FILENAME ."
+# swap out definer lines for views so we don't have errors about undefined users
+run_command "sed -i 's/\`scott\`@\`192.168.1.\%\`/\`root\`@\`localhost\`/g' $FILENAME"
+run_command "ssh $DB_SERVER 'rm $FILENAME'"
+
+
+

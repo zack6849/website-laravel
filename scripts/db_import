@@ -1,0 +1,18 @@
+#!/bin/bash
+
+#
+# Usage: ./db_import <filename>
+# Imports SQL dump into specified database from config
+#
+
+source db_import_config
+
+function run_command(){
+    echo "[EXEC] $1"
+    eval $1
+}
+
+run_command "mysql -u $MYSQL_USERNAME --host='$MYSQL_HOST' --password='$MYSQL_PASSWORD' --execute=\"DROP DATABASE \\\`$MYSQL_DATABASE\\\`; CREATE DATABASE \\\`$MYSQL_DATABASE\\\`;\""
+run_command "pv $1 | mysql -u $MYSQL_USERNAME --host='$MYSQL_HOST' --password='$MYSQL_PASSWORD' $MYSQL_DATABASE";
+run_command "cd .. && php artisan migrate && cd -"
+run_command "pv post_import.sql | mysql -u $MYSQL_USERNAME --host='$MYSQL_HOST' --password='$MYSQL_PASSWORD' $MYSQL_DATABASE"
