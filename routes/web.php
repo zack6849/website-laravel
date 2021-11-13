@@ -26,20 +26,22 @@ Auth::routes(['register' => false]);
 Route::get('logout', ['as' => 'logout', 'uses' => 'Auth\LoginController@logout']);
 
 Route::middleware(['auth'])->group(function(){
-    Route::get('/files', 'FileController@index')->name("file.index")->middleware('auth');
-    Route::post('/ajax/files', 'FileController@ajaxIndex')->name("file.ajax.index")->middleware('auth');
-    Route::get('/files/new', 'FileController@create')->name("file.create")->middleware('auth');
-    Route::put('/files', 'FileController@store')->name('file.store')->middleware('auth');
-    Route::delete('/files/{file}', 'FileController@destroy')->name("file.delete")->middleware('auth');
-    Route::get('/files/{file}/delete', 'FileController@requestDestroy')->name("file.request.delete")->middleware('auth');
-
-    Route::get('/lookup/{phone_number}', 'TwilioController@lookup')->middleware('auth');
-    Route::get('/lookup/{phone_number}/raw', 'TwilioController@lookupRaw')->middleware('auth');
+    Route::prefix('/files')->group(function(){
+        Route::get('/', 'FileController@index')->name("file.index");
+        Route::get('/new', 'FileController@create')->name("file.create");
+        Route::put('/files', 'FileController@store')->name('file.store');
+        Route::get('/{file}/delete', 'FileController@requestDestroy')->name("file.request.delete");
+        Route::delete('/{file}', 'FileController@destroy')->name("file.delete");
+    });
+    Route::prefix("/lookup")->group(function(){
+        Route::get('/{phone_number}', 'TwilioController@lookup')->name("phone.lookup");
+        Route::get('/{phone_number}/raw', 'TwillioController@lookupRaw')->name("phone.lookup.raw");
+    });
 });
 
-    Route::get('/files/{filename}', 'FileController@show')->name("file.show")->where('filename', '.*');;
-    //same thing as above, for backwards compat, moved permanently, for search indexers, I guess...
-    Route::get('/uploads/{file_name}', function ($file_name){
+Route::get('/files/{filename}', 'FileController@show')->name("file.show")->where('filename', '.*');;
+//same thing as above, for backwards compat, moved permanently, for search indexers, I guess...
+Route::get('/uploads/{file_name}', function ($file_name) {
     return redirect(route('file.show', ['filename' => $file_name]), 301);
 });
 

@@ -12,9 +12,13 @@ use Illuminate\Http\Request;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-
-Route::middleware("auth:api")->post("/files", "FileController@api_store")->name("api.file.store");
-Route::middleware("auth:api")->delete("/files/{file_id}", "FileController@delete")->name("api.file.delete");
-
-Route::middleware('auth:api')->post('/homescan', 'HomeScanController@search');
-Route::middleware('auth:api')->post('/homescan/byaddress', 'HomeScanController@searchByAddress');
+Route::middleware("auth:api")->group(function(){
+    Route::prefix("/files")->group(function(){
+        Route::post('/', 'FileController@api_store')->name("api.file.store");
+        Route::delete('/{file_id}', 'FileConttroller@delete')->name("api.file.delete");
+    });
+    Route::prefix("/homescan")->group(function(){
+        Route::post('/', 'HomeScanController@search')->name("api.homescan.scan");
+        Route::post('/byaddress', 'HomeScanController@searchByAddress')->name("api.homescan.scan.byaddress");
+    });
+});
