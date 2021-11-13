@@ -30,15 +30,16 @@ Route::middleware(['auth'])->group(function(){
     Route::post('/ajax/files', 'FileController@ajaxIndex')->name("file.ajax.index")->middleware('auth');
     Route::get('/files/new', 'FileController@create')->name("file.create")->middleware('auth');
     Route::put('/files', 'FileController@store')->name('file.store')->middleware('auth');
-    Route::get('/files/{filename}', 'FileController@show')->name("file.show")->where('filename', '.*');;
-    //same thing as above, for backwards compat, moved permanently, for search indexers, I guess...
-    Route::get('/uploads/{file_name}', function ($file_name){
-        return redirect(route('file.show', ['file_name' => $file_name]), 301);
-    });
-    Route::delete('/files/{file_id}', 'FileController@destroy')->name("file.delete")->middleware('auth');
-    Route::get('/files/{file_id}/delete', 'FileController@requestDestroy')->name("file.request.delete")->middleware('auth');
+    Route::delete('/files/{file}', 'FileController@destroy')->name("file.delete")->middleware('auth');
+    Route::get('/files/{file}/delete', 'FileController@requestDestroy')->name("file.request.delete")->middleware('auth');
 
     Route::get('/lookup/{phone_number}', 'TwilioController@lookup')->middleware('auth');
     Route::get('/lookup/{phone_number}/raw', 'TwilioController@lookupRaw')->middleware('auth');
+});
+
+    Route::get('/files/{filename}', 'FileController@show')->name("file.show")->where('filename', '.*');;
+    //same thing as above, for backwards compat, moved permanently, for search indexers, I guess...
+    Route::get('/uploads/{file_name}', function ($file_name){
+    return redirect(route('file.show', ['filename' => $file_name]), 301);
 });
 

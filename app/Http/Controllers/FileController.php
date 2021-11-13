@@ -84,7 +84,7 @@ class FileController extends Controller
         $file->user_id = $user->id;
         $file->size = Storage::size($file->file_location);
         $file->save();
-        return ['file' => $file, 'view_url' => route('file.show', ['file' => $file->filename]), 'delete_url' => URL::signedRoute('file.request.delete', ['file' => $file->id])];
+        return ['file' => $file, 'view_url' => route('file.show', ['filename' => $file->filename]), 'delete_url' => URL::signedRoute('file.request.delete', ['file' => $file->id])];
     }
 
 

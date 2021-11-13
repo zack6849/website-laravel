@@ -15,3 +15,6 @@ use Illuminate\Http\Request;
 
 Route::middleware("auth:api")->post("/files", "FileController@api_store")->name("api.file.store");
 Route::middleware("auth:api")->delete("/files/{file_id}", "FileController@delete")->name("api.file.delete");
+
+Route::middleware('auth:api')->post('/homescan', 'HomeScanController@search');
+Route::middleware('auth:api')->post('/homescan/byaddress', 'HomeScanController@searchByAddress');
