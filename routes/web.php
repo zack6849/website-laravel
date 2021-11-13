@@ -36,7 +36,7 @@ Route::middleware(['auth'])->group(function(){
     });
 
     //let you logout.
-    Route::get('logout', ['as' => 'logout', 'uses' => 'Auth\LoginController@logout']);
+//    Route::get('logout', ['as' => 'logout', 'uses' => 'Auth\LoginController@logout']);
 });
 
 Route::get('/files/{filename}', 'FileController@show')->name("file.show")->where('filename', '.*');;

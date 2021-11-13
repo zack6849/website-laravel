@@ -2,7 +2,7 @@
 @section('title', 'Photography')
 
 @section('content')
-    <div class="flex container mx-auto mb-6">
+    <div class="flex container mx-auto my-6">
         <div class="hidden lg:visible lg:block mr-10">
             <img src="https://42f2671d685f51e10fc6-b9fcecea3e50b3b59bdc28dead054ebc.ssl.cf5.rackcdn.com/illustrations/camera_mg5h.svg" >
         </div>

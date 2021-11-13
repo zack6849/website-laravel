@@ -1,5 +1,5 @@
 
-<nav class=" bg-teal-500 pl-20 pr-20 p-6 mb-6">
+<nav class=" bg-teal-500 pl-20 pr-20 p-6">
     <div class="container mx-auto">
         <div class="flex items-center justify-between flex-wrap">
             <div class="flex items-center flex-shrink-0 text-white mr-6">

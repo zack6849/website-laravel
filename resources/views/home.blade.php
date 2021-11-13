@@ -1,5 +1,5 @@
 <x-base-page title="Index" noheader="true">
-    <div class="flex container mx-auto mb-6">
+    <div class="flex container my-6">
         <div class="hidden lg:visible lg:block mr-10">
             <img src="{{asset('img/profile.jpg')}}" class="rounded-full w-48">
         </div>
@@ -20,7 +20,7 @@
     </div>
     <hr>
 
-    <div class="container-fluid  mt-5 pb-5" id="technasdologies">
+    <div class="container-fluid  mt-5 py-5" id="technologies">
         <div class="container mx-auto">
             <div class="flex flex-wrap justify-around">
                 <technology name="PHP" image="{{asset('img/logos/language/php.svg')}}"></technology>
