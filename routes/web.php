@@ -20,7 +20,7 @@ Route::get('/photos', function (){
     return view('photography');
 })->name('photography');
 
-Auth::routes(['register' => false]);
+Auth::routes(['register' => false, 'logout' => false]);
 
 Route::middleware(['auth'])->group(function(){
     Route::prefix('/files')->group(function(){
@@ -36,7 +36,7 @@ Route::middleware(['auth'])->group(function(){
     });
 
     //let you logout.
-//    Route::get('logout', ['as' => 'logout', 'uses' => 'Auth\LoginController@logout']);
+    Route::get('logout', ['as' => 'logout', 'uses' => 'Auth\LoginController@logout']);
 });
 
 Route::get('/files/{filename}', 'FileController@show')->name("file.show")->where('filename', '.*');;
