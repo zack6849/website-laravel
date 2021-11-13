@@ -2,7 +2,7 @@
 
 @setup
 $repo = 'https://github.com/zack6849/website-laravel.git';
-$appDir = '/home/zack/site';
+$appDir = '/srv/www/zack6849.com';
 $branch = 'master';
 
 date_default_timezone_set('America/New_York');
