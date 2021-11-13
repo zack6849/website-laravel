@@ -10,20 +10,7 @@ class TwilioController extends Controller
 {
 
     function lookup(Request $request, $phone_number){
-        $cache_key = "lookups". md5($phone_number);
-        if(!Cache::has($cache_key)){
-            $client = new Client(config('twilio.sid'), config('twilio.token'));
-            $result = $client->lookups->v1->phoneNumbers($phone_number)->fetch([
-                'type' => ['carrier','caller-name'],
-                'addOns' => [
-                    'ekata_reverse_phone',
-                ]
-            ]);
-            $response = $result->toArray();
-            Cache::forever($cache_key, $response);
-        }
-
-        $response = Cache::get($cache_key);
+        $response = $this->lookupNumber($phone_number);
         $ekata_data = $response['addOns']['results']['ekata_reverse_phone']['result'];
         $people = $ekata_data['associated_people'];
         $people_map = [];
@@ -48,6 +35,10 @@ class TwilioController extends Controller
     }
     
     function lookupRaw(Request $request, $phone_number){
+        return $this->lookupNumber($phone_number);
+    }
+    
+    private function lookupNumber($phone_number){
         $cache_key = "lookups". md5($phone_number);
         if(!Cache::has($cache_key)){
             $client = new Client(config('twilio.sid'), config('twilio.token'));
@@ -60,7 +51,6 @@ class TwilioController extends Controller
             $response = $result->toArray();
             Cache::forever($cache_key, $response);
         }
-
         return Cache::get($cache_key);
     }
 }

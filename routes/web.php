@@ -22,9 +22,6 @@ Route::get('/photos', function (){
 
 Auth::routes(['register' => false]);
 
-//let you logout.
-Route::get('logout', ['as' => 'logout', 'uses' => 'Auth\LoginController@logout']);
-
 Route::middleware(['auth'])->group(function(){
     Route::prefix('/files')->group(function(){
         Route::get('/', 'FileController@index')->name("file.index");
@@ -35,8 +32,11 @@ Route::middleware(['auth'])->group(function(){
     });
     Route::prefix("/lookup")->group(function(){
         Route::get('/{phone_number}', 'TwilioController@lookup')->name("phone.lookup");
-        Route::get('/{phone_number}/raw', 'TwillioController@lookupRaw')->name("phone.lookup.raw");
+        Route::get('/{phone_number}/raw', 'TwilioController@lookupRaw')->name("phone.lookup.raw");
     });
+
+    //let you logout.
+    Route::get('logout', ['as' => 'logout', 'uses' => 'Auth\LoginController@logout']);
 });
 
 Route::get('/files/{filename}', 'FileController@show')->name("file.show")->where('filename', '.*');;
