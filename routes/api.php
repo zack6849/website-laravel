@@ -14,8 +14,8 @@ use Illuminate\Http\Request;
 */
 Route::middleware("auth:api")->group(function(){
     Route::prefix("/files")->group(function(){
-        Route::post('/', 'FileController@api_store')->name("api.file.store");
-        Route::delete('/{file_id}', 'FileConttroller@delete')->name("api.file.delete");
+        Route::post('/', 'FileController@store')->name("api.file.store");
+        Route::delete('/{file}', 'FileController@destroy')->name("api.file.delete");
     });
     Route::prefix("/homescan")->group(function(){
         Route::post('/', 'HomeScanController@search')->name("api.homescan.scan");

@@ -7,5 +7,5 @@
             </a>
           </span>
     </x-slot>
-    <livewire:files.table></livewire:files.table>
+    <livewire:tables.files :user="auth()->user()"></livewire:tables.files>
 </x-base-page>

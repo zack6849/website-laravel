@@ -9,7 +9,7 @@ use Twilio\Rest\Client;
 class TwilioController extends Controller
 {
 
-    function lookup(Request $request, $phone_number){
+    function lookup($phone_number){
         $response = $this->lookupNumber($phone_number);
         $ekata_data = $response['addOns']['results']['ekata_reverse_phone']['result'];
         $people = $ekata_data['associated_people'];
@@ -33,11 +33,11 @@ class TwilioController extends Controller
             'associated_people' => $people_map
         ];
     }
-    
-    function lookupRaw(Request $request, $phone_number){
+
+    function lookupRaw($phone_number){
         return $this->lookupNumber($phone_number);
     }
-    
+
     private function lookupNumber($phone_number){
         $cache_key = "lookups". md5($phone_number);
         if(!Cache::has($cache_key)){

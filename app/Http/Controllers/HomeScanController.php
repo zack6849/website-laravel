@@ -34,7 +34,7 @@ class HomeScanController extends Controller
         $twilio_response->message($this->getSummaryByListingID($listing_id));
         return $twilio_response;
     }
-    
+
     public function searchByAddress(Request $request){
         $address = $request->address;
         $listing_id = $this->getListingIdByAddress($address);
@@ -112,7 +112,8 @@ class HomeScanController extends Controller
             return null;
         }
         $response_data = json_decode($response->body(), true);
-        $listing_id = Arr::get($response_data, 'd.Properties.0.Listing.ID', 'No Listing ID found in response: '. json_encode($response_data, JSON_PRETTY_PRINT));
+        $listing_id = Arr::get($response_data, 'd.Properties.0.Listing.ID', Arr::get('d.Properties.0.ID', 'No Listing ID found in response'));
+//        $listing_id = Arr::get($response_data, 'd.Properties.0.Listing.ID', 'No Listing ID found in response: '. json_encode($response_data, JSON_PRETTY_PRINT));
         if($listing_id !== null){
             \Cache::put($key, $listing_id);
         }
@@ -122,10 +123,13 @@ class HomeScanController extends Controller
     function getSummaryByListingID($listing_id)
     {
         $data = collect($this->getHomeSnapInfoByListingId($listing_id));
+        debug($data);
         if(!empty($data['ContractDate'])){
             $data['ContractDate'] = date('c', $this->homesnapDateToDate($data['ContractDate']));
+        }else{
+            $data['ContractDate'] = 'Unknown.';
         }
-        
+
         $beds = Arr::get($data, 'Details.Interior Features.Bedrooms Total');
         $baths = Arr::get($data, 'Details.Interior Features.Bathrooms Full');
         $construction_year = Arr::get($data,'YearBuilt');
@@ -139,12 +143,15 @@ class HomeScanController extends Controller
         $foundation = Arr::get($data, 'Details.Interior Features.Foundation Details');
         $yearly_tax = Arr::get($data, 'Details.Tax Info.Tax Annual Amount');
         $homesteaded = Arr::get($data, 'Details.Homestead', 'Unknown');
-        $full_address = implode(" ", [$data['FullStreetAddress'], $data['DefaultParentArea']['Name'], $data['Zip']]);
+        $street_address = Arr::get($data, 'FullStreetAddress', 'No Address');
+        $area = Arr::get($data, 'DefaultParentArea.Name', 'No Area Name');
+        $zip = Arr::get($data, 'Zip');
+        $full_address = implode(" ", [$street_address, $area, $zip]);
         $construction_material = Arr::get($data, 'Details.Listing Details.Construction Materials', 'Unknown');
         $floodzone_code = Arr::get($data, 'Details.Exterior Features.Flood Zone Code');
         $summary = <<<EOF
         Report For: $full_address
-        
+
         $sqft Sq. Ft house w/ $beds bed(s) and $baths bath(s) Built in $construction_year
         The exterior is $construction_material, and the foundation is $foundation
         Flood Zone Code: $floodzone_code
@@ -155,7 +162,7 @@ class HomeScanController extends Controller
         Under Contract?: {$data['ContractDate']}
 EOF;
 
-        
+
 //        $data = [
 //            'Address' => ,
 //            'Construction Mat.' => ,

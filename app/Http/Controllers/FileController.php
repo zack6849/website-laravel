@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\File;
 use App\Http\Requests\UploadFileRequest;
-use App\User;
+use App\Models\File;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use League\Flysystem\FileNotFoundException;
-use Yajra\DataTables\Facades\DataTables;
 
 class FileController extends Controller
 {
@@ -21,7 +20,7 @@ class FileController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|Response
      */
     public function index()
     {
@@ -31,7 +30,7 @@ class FileController extends Controller
     /**
      * Show the form for creating a new resource.
      *
-     * @return Response
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|Response
      */
     public function create()
     {
@@ -40,14 +39,12 @@ class FileController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param UploadFileRequest $request
-     * @return Response
      */
     public function store(UploadFileRequest $request)
     {
         $uploaded_file = $request->file("file");
         $name = $uploaded_file->getClientOriginalName();
+        //create a new filename if there's a duplicate, since it's effectively a slug.
         while (File::whereOriginalFilename($name)->exists()) {
             $name = implode(".", [Str::random(16),  $uploaded_file->getClientOriginalExtension()]);
         }
@@ -59,47 +56,28 @@ class FileController extends Controller
         $file->user_id = auth()->user()->id;
         $file->size = Storage::size($file->file_location);
         $file->save();
+        if($request->expectsJson()){
+            return [
+                'file' => $file,
+                'view_url' => route('file.show', ['file' => $file->filename]),
+                //signed route, so you can't tamper with the deletion URL and change IDs or something.
+                'delete_url' => URL::signedRoute('file.delete', $file)
+            ];
+        }
         return redirect(route('file.index'));
     }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param UploadFileRequest $request
-     * @return array
-     */
-    public function api_store(UploadFileRequest $request)
-    {
-        $user = auth()->user();
-        $uploaded_file = $request->file("file");
-        $name = $uploaded_file->getClientOriginalName();
-        while (File::whereOriginalFilename($name)->exists()) {
-            $name = implode(".", [Str::random(16),  $uploaded_file->getClientOriginalExtension()]);
-        }
-        $file = new File();
-        $file->file_location = $uploaded_file->storeAs(config('upload.storage.path'), $name);
-        $file->filename = str_replace(config('upload.storage.path') . DIRECTORY_SEPARATOR, '', $file->file_location);
-        $file->original_filename = $name;
-        $file->mime = $uploaded_file->getMimeType();
-        $file->user_id = $user->id;
-        $file->size = Storage::size($file->file_location);
-        $file->save();
-        return ['file' => $file, 'view_url' => route('file.show', ['filename' => $file->filename]), 'delete_url' => URL::signedRoute('file.request.delete', ['file' => $file->id])];
-    }
-
 
     /**
      * Display the specified resource.
      *
      * @param $filename
-     * @return Response
+     * @return Response|\Symfony\Component\HttpFoundation\Response
      * @throws FileNotFoundException
      */
-    public function show($filename)
+    public function show(File $file)
     {
-        $file = File::whereFilename($filename)->firstOrFail();
-        $fs = Storage::getDriver();
-        $stream = $fs->readStream($file->file_location);
+        //stream the file, useful for large files.
+        $stream = Storage::getDriver()->readStream($file->file_location);
         return response()->stream(function () use ($stream) {
             fpassthru($stream);
         }, 200, [
@@ -109,50 +87,44 @@ class FileController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove the specified resource from storage via API
      *
      * @param int $id
-     * @return RedirectResponse
+     * @return RedirectResponse|string[]
      */
-    public function destroy($id)
+    public function destroy(Request $request, File $file)
     {
-        /** @var User $user */
-        $file = auth()->user()->files()->findOrFail($id);
-        $success = true;
+        $success = false;
         if (Storage::exists($file->file_location)) {
             $success = Storage::delete($file->file_location);
         }
         $success = $success && $file->delete();
         if ($success) {
-            return Redirect::back()->with('status', 'Your file was deleted!');
+            if($request->expectsJson()){
+                return ['status' => 'file deleted'];
+            }
+            return Redirect::to(route('file.index'))->with('status', 'Your file was deleted!');
         }
-        return Redirect::back()->with('status', 'File deletion failed :(');
+        if($request->expectsJson()){
+            return ['status' => 'File deletion failed'];
+        }
+        return Redirect::to(route('file.index'))->with('status', 'File deletion failed :(');
     }
 
 
     /**
-     * Remove the specified resource from storage.
+     * GET request to delete the file
      *
      * @param Request $request
      * @param int $id
-     * @return RedirectResponse
+     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|RedirectResponse
      * @throws \Exception
      */
-    public function requestDestroy(Request $request, int $id)
+    public function delete(Request $request, File $file)
     {
         if (!$request->hasValidSignature()) {
             abort(401);
         }
-        /** @var User $user */
-        $file = auth()->user()->files()->findOrFail($id);
-        $success = true;
-        if (Storage::exists($file->file_location)) {
-            $success = Storage::delete($file->file_location);
-        }
-        $success = $success && $file->delete();
-        if ($success) {
-            return Redirect::back()->with('status', 'Your file was deleted!');
-        }
-        return Redirect::back()->with('status', 'File deletion failed :(');
+        return view('files.delete', compact('file'));
     }
 }

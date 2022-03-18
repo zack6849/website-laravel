@@ -8,7 +8,7 @@
 @import 'tailwind';
 
 // Bootstrap
-@import '~bootstrap/scss/bootstrap';
+//@import '~bootstrap/scss/bootstrap';
 
 @import "misc/tweaks";
 
@@ -16,10 +16,9 @@
     padding: 0;
 }
 
-#technologies{
-    background-color: #4d4d4d;
-    background-image: url("/img/oriental-tiles.png");
-    background-attachment: fixed;
+.technology{
+    border: 1px solid rgba(0,0,0,0.25);
+    border-radius: 3px;
 }
 
 a{
@@ -35,4 +34,8 @@ div#app{
 }
 div#content{
     flex-grow: 1;
+}
+
+[x-cloak] {
+    display: none;
 }

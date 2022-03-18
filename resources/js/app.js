@@ -5,7 +5,6 @@
  */
 require("./bootstrap");
 require('@fortawesome/fontawesome-free/js/all');
-
 window.Vue = require('vue');
 Vue.component('project-card', require('./components/ProjectCardComponent.vue').default);
 Vue.component('photo-gallery', require('./components/PhotoGalleryComponent').default);
@@ -22,3 +21,7 @@ const app = new Vue({
         }
     }
 });
+
+import Alpine from 'alpinejs'
+window.Alpine = Alpine;
+Alpine.start()

@@ -1,5 +1,4 @@
-
-<nav class=" bg-teal-500 pl-20 pr-20 p-6">
+<nav class=" bg-teal-500 pl-20 pr-20 p-6 mb-6">
     <div class="container mx-auto">
         <div class="flex items-center justify-between flex-wrap">
             <div class="flex items-center flex-shrink-0 text-white mr-6">
@@ -24,9 +23,12 @@
                         <a href="{{route('file.index')}}" class="block lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">
                             My Files
                         </a>
-                        <a href="{{route('logout')}}" class="block lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">
-                            Logout
-                        </a>
+                        <form class="block lg:inline-block" action="{{route('logout')}}" method="POST">
+                            {{csrf_field()}}
+                            <button type="submit" class="lg:mt-0 text-teal-200 hover:text-white mr-4">
+                                Logout
+                            </button>
+                        </form>
                     @endauth
                     @guest
                         <a href="{{route('login')}}" class="block 4 lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">

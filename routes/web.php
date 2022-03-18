@@ -11,36 +11,31 @@
 |
 */
 
-Route::get('/', function () {
-    return view('home');
-})->name('home');
 
-//todo: this should probably be proper controllers
-Route::get('/photos', function (){
-    return view('photography');
-})->name('photography');
+Route::get('/', 'PageController@home')->name("home");
+Route::get('/photos', 'PageController@photos')->name('photography');
 
-Auth::routes(['register' => false, 'logout' => false]);
+Auth::routes(['register' => false, ]);
 
+//protected routes.
 Route::middleware(['auth'])->group(function(){
     Route::prefix('/files')->group(function(){
         Route::get('/', 'FileController@index')->name("file.index");
         Route::get('/new', 'FileController@create')->name("file.create");
         Route::put('/files', 'FileController@store')->name('file.store');
-        Route::get('/{file}/delete', 'FileController@requestDestroy')->name("file.request.delete");
-        Route::delete('/{file}', 'FileController@destroy')->name("file.delete");
+        Route::get('{file:filename}/delete', 'FileController@delete')->name('file.delete');
+        Route::post('{file:filename}/delete', 'FileController@destroy')->name("file.destroy");
     });
     Route::prefix("/lookup")->group(function(){
         Route::get('/{phone_number}', 'TwilioController@lookup')->name("phone.lookup");
         Route::get('/{phone_number}/raw', 'TwilioController@lookupRaw')->name("phone.lookup.raw");
     });
-
-    //let you logout.
-    Route::get('logout', ['as' => 'logout', 'uses' => 'Auth\LoginController@logout']);
 });
 
-Route::get('/files/{filename}', 'FileController@show')->name("file.show")->where('filename', '.*');;
-//same thing as above, for backwards compat, moved permanently, for search indexers, I guess...
+//public routes.
+Route::get('/files/{file:filename}', 'FileController@show')->name("file.show");
+
+//same thing as above, for backwards compatability. make any indexed uploads point to the new endpoint
 Route::get('/uploads/{file_name}', function ($file_name) {
     return redirect(route('file.show', ['filename' => $file_name]), 301);
 });
