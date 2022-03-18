@@ -123,7 +123,6 @@ class HomeScanController extends Controller
     function getSummaryByListingID($listing_id)
     {
         $data = collect($this->getHomeSnapInfoByListingId($listing_id));
-        debug($data);
         if(!empty($data['ContractDate'])){
             $data['ContractDate'] = date('c', $this->homesnapDateToDate($data['ContractDate']));
         }else{

@@ -14,7 +14,6 @@ class PageController extends Controller
      */
     public function home(Request $request)
     {
-        debug("Valid Signature?:", $request->hasValidSignature());
         return view('home');
     }
 
