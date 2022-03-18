@@ -28,7 +28,7 @@
     "dependencies": {
         "alpinejs": "^3.9.1",
         "datatables": "^1.10.18",
-        "datatables.net": "^1.10.19",
+        "datatables.net": "^1.11.3",
         "popper.js": "^1.15.0",
         "tailwindcss": "^1.1.2"
     }
