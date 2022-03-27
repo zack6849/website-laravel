@@ -21,4 +21,8 @@ Route::middleware("auth:api")->group(function(){
         Route::post('/', 'HomeScanController@search')->name("api.homescan.scan");
         Route::post('/byaddress', 'HomeScanController@searchByAddress')->name("api.homescan.scan.byaddress");
     });
+
+    Route::prefix('/twilio')->group(function(){
+        Route::post('/lookup', 'TwilioController@sms')->name('twilio.sms');
+    });
 });

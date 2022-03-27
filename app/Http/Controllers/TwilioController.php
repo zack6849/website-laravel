@@ -2,55 +2,35 @@
 
 namespace App\Http\Controllers;
 
+use App\Providers\TwilioProvider;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
-use Twilio\Rest\Client;
+use Twilio\TwiML\MessagingResponse;
 
 class TwilioController extends Controller
 {
 
-    function lookup($phone_number){
-        $response = $this->lookupNumber($phone_number);
-        $ekata_data = $response['addOns']['results']['ekata_reverse_phone']['result'];
-        $people = $ekata_data['associated_people'];
-        $people_map = [];
-        foreach ($people as $person){
-            $people_map[$person['id']] = [
-                'name' => $person['name'],
-                'relation' => $person['relation']
-            ];
+    function lookup($phone_number, TwilioProvider $twilio){
+        return $twilio->extractData($twilio->lookupNumber($phone_number));
+    }
+
+    function raw($phone_number, TwilioProvider $twilio){
+        return $twilio->lookupNumber($phone_number);
+    }
+
+    function sms(Request $request, TwilioProvider $provider){
+        $sms_body = $request->Body;
+        $matches = [];
+        preg_match_all('/\b\+?[0-9]?[0-9]{3}\s*-?\s*[0-9]{3}\s*-?\s*[0-9]{4}\b/',$sms_body,$matches);
+        if(empty($matches)){
+            return (new MessagingResponse)->message("Couldn't find phone number in message '$sms_body'");
         }
-        $other_owners = $ekata_data['belongs_to'];
-
-        return [
-            'possible_owners' => [
-                $response['callerName']['caller_name'],
-                $other_owners['name']
-            ],
-            'country' => $response['countryCode'],
-            'carrier' => $response['carrier']['name'],
-            'type' => $response['carrier']['type'],
-            'associated_people' => $people_map
-        ];
-    }
-
-    function lookupRaw($phone_number){
-        return $this->lookupNumber($phone_number);
-    }
-
-    private function lookupNumber($phone_number){
-        $cache_key = "lookups". md5($phone_number);
-        if(!Cache::has($cache_key)){
-            $client = new Client(config('twilio.sid'), config('twilio.token'));
-            $result = $client->lookups->v1->phoneNumbers($phone_number)->fetch([
-                'type' => ['carrier','caller-name'],
-                'addOns' => [
-                    'ekata_reverse_phone',
-                ]
-            ]);
-            $response = $result->toArray();
-            Cache::forever($cache_key, $response);
+        $first_group = array_pop($matches);
+        $number = array_pop($first_group);
+        //if fed a local number, presume US prefix
+        if(strlen($number) == 10){
+            $number = "1$number";
         }
-        return Cache::get($cache_key);
+        return (new MessagingResponse())->message($provider->toSms($provider->extractData($provider->lookupNumber($number))));
     }
+
 }

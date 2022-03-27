@@ -17,5 +17,4 @@ mix.js('resources/js/app.js', 'public/js')
     .sass("resources/sass/login.scss", 'public/css')
     .extract(['vue', 'lodash', 'axios'])
     .tailwind()
-    .purgeCss()
     .version();
