@@ -98,12 +98,12 @@ class TwilioProvider extends ServiceProvider
 
     public function toSms($data)
     {
-        $possible_owners = implode(",", $data['possible_owners']);
+        $possible_owners = implode(", ", $data['possible_owners']);
         $associated = [];
         foreach ($data['associated_people'] as $person) {
             $associated[] = $person['name'] . (!empty($person['relation']) ? " (Possible Relation: {$person['relation']})" : "");
         }
-        $response = "Likely Owner: $possible_owners\r\n";
+        $response = "Likely Owner: \n - $possible_owners\n";
         if (array_key_exists('associated_addresses', $data)) {
             $addresses = [];
             foreach ($data['associated_addresses'] as $address) {
@@ -114,10 +114,17 @@ class TwilioProvider extends ServiceProvider
                     $address['country']
                 ]);
             }
-            $response .= "Likely Addresses: " . implode(", ", $addresses) . "\r\n";
+            if(!empty($addresses)){
+                $response .= "Likely Addresses: \n";
+                foreach ($addresses as $address){
+                    $response .= " - $address\n";
+                }
+            }
         }
-        $associated_names = implode(", ", $associated);
-        $response .= "Other Associated Names: $associated_names";
+        $response .= "Other Associated Names:\n";
+        foreach ($associated as $associated_name){
+            $response .= " - $associated_name\n";
+        }
         return $response;
     }
 }
