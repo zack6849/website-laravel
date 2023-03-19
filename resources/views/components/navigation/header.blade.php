@@ -17,6 +17,9 @@
                     <a href="{{route('photography')}}" class="block lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">
                         Photography
                     </a>
+                    <a href="{{route('qsos')}}" class="block lg:inline-block lg:mt-0 text-teal-200 hover:text-white mr-4">
+                        Radio Map
+                    </a>
                 </div>
                 <div class="items-end">
                     @auth

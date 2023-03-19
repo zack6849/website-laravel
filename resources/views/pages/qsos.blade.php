@@ -10,7 +10,7 @@
 @section('content')
     <div class="container-fluid pb-5">
         <div class="container mx-auto">
-            <h1 class="text-3xl">Radio QSO Map</h1>
+            <h1 class="text-3xl pb-2">Radio QSO Map</h1>
             <qso-map
                 mapbox-key="{{config('services.mapbox.token')}}"
             />
