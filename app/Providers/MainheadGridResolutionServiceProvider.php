@@ -1,0 +1,85 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Providers;
+
+use Illuminate\Support\ServiceProvider;
+
+/**
+ * Class MainheadGridResolutionService
+ * @package App\Services
+ * Used to convert HAM Mainhead grid locators (eg: FN42) to lat/lon coordinates
+ * Inspired by / ported from https://github.com/gravypod/maidenhead/blob/master/maidenhead.php
+ */
+class MainheadGridResolutionServiceProvider extends ServiceProvider
+{
+    private const MAX_LAT = 90;
+    private const MIN_LAT = -90;
+    private const MAX_LON = 180;
+    private const MIN_LON = -180;
+
+    private const LAT_DISTANCE = self::MAX_LAT - self::MIN_LAT;
+    private const LON_DISTANCE = self::MAX_LON - self::MIN_LON;
+
+    public function register(): void
+    {
+        $this->app->singleton(MainheadGridResolutionServiceProvider::class, function ($app) {
+            return new MainheadGridResolutionServiceProvider($app);
+        });
+    }
+
+    private function subdivisor(): \Closure
+    {
+        $last = array(18, 10, 24, 10);
+        $i = 0;
+        return function () use (&$i, &$last) {
+            if ($i >= count($last)) {
+                $i = 2;
+            }
+            return $last[$i++];
+        };
+    }
+
+    function parseDigit($digit): float|bool|int
+    {
+        $alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        $value = strpos($alphabet, $digit);
+        if (!$value) {
+            $value = floatval($digit);
+        }
+        return $value;
+    }
+
+    function getGridSquare(string $squareId): array
+    {
+        if (strlen($squareId) % 2 != 0) {
+            return array(null, null, null, null);
+        }
+
+        $grid_square_id = strtoupper($squareId);
+
+        $lat = floatval(self::MIN_LAT);
+        $lon = floatval(self::MIN_LON);
+        $lat_div = floatval(self::LAT_DISTANCE);
+        $lon_div = floatval(self::LON_DISTANCE);
+
+        $base_calculator = $this->subdivisor();
+
+        for ($base = $base_calculator(); strlen($grid_square_id) > 0; $base = $base_calculator()) {
+
+            $lat_id = $grid_square_id[1];
+            $lon_id = $grid_square_id[0];
+
+            $lat_div /= $base;
+            $lon_div /= $base;
+
+            $lat += $this->parseDigit($lat_id) * $lat_div;
+            $lon += $this->parseDigit($lon_id) * $lon_div;
+
+            $grid_square_id = substr($grid_square_id, 2);
+
+        }
+        return array($lat, $lon, $lat_div, $lon_div);
+    }
+}

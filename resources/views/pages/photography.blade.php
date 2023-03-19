@@ -16,7 +16,10 @@
     <hr>
     <div class="container-fluid  mt-5 pb-5" id="technasdologies">
         <div class="container mx-auto">
-            <photo-gallery api_key="{{env('FLICKR_API_KEY')}}" user_id="{{env('FLICKR_GALLERY_USER')}}"></photo-gallery>
+            <photo-gallery
+                api_key="{{config('services.flickr.api_key')}}"
+                user_id="{{config('services.flickr.gallery_uid')}}"
+            />
         </div>
     </div>
 @endsection

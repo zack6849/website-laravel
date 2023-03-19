@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Database\Seeders;
 
@@ -21,5 +22,9 @@ class DatabaseSeeder extends Seeder
         $user->password = Hash::make("password");
         $user->email = "zack@zack6849.com";
         $user->save();
+
+        $this->call(ITURegionSeeder::class);
+        $this->call(DXCCEntitySeeder::class);
+
     }
 }

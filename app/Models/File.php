@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Models;
 
@@ -12,7 +13,6 @@ use Illuminate\Support\Carbon;
  * @method static Builder|File newModelQuery()
  * @method static Builder|File newQuery()
  * @method static Builder|File query()
- * @mixin \Eloquent
  * @property int $id
  * @property int $user_id
  * @property string $file_location
@@ -34,6 +34,7 @@ use Illuminate\Support\Carbon;
  * @method static Builder|File whereFilename($value)
  * @method static Builder|File whereSize($value)
  * @method static Builder|File forUser($user)
+ * @mixin \Eloquent
  */
 class File extends Model
 {

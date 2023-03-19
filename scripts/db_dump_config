@@ -1,0 +1,5 @@
+#!/bin/bash
+DB_SERVER='zack@zack6849.com'
+MYSQL_USERNAME='zack_website'
+MYSQL_PASSWORD='n*H92E3nMIUjvv1lGkJf'
+FILENAME="$1.dmp"

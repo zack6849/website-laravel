@@ -16,6 +16,7 @@
 
     <!-- Styles -->
     @livewireStyles
+    @vite('resources/css/app.css')
     @stack('styles')
 </head>
 <body class="h-screen">
@@ -30,10 +31,8 @@
         <x-navigation.footer/>
     </div>
 </div>
-<script src="{{mix('/js/manifest.js')}}"></script>
-<script src="{{mix('/js/vendor.js')}}"></script>
-<script src="{{mix('js/app.js')}}" defer></script>
 @livewireScripts
 @stack('scripts')
+@vite('resources/js/app.js')
 </body>
 </html>

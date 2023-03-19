@@ -1,6 +1,5 @@
 <?php
-
-use Illuminate\Http\Request;
+declare(strict_types=1);
 
 /*
 |--------------------------------------------------------------------------
@@ -12,17 +11,20 @@ use Illuminate\Http\Request;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-Route::middleware("auth:api")->group(function(){
-    Route::prefix("/files")->group(function(){
+Route::middleware("auth:api")->group(function () {
+    Route::prefix("/files")->group(function () {
         Route::post('/', 'FileController@store')->name("api.file.store");
         Route::delete('/{file}', 'FileController@destroy')->name("api.file.delete");
     });
-    Route::prefix("/homescan")->group(function(){
+    Route::prefix("/homescan")->group(function () {
         Route::post('/', 'HomeScanController@search')->name("api.homescan.scan");
         Route::post('/byaddress', 'HomeScanController@searchByAddress')->name("api.homescan.scan.byaddress");
     });
 
-    Route::prefix('/twilio')->group(function(){
+    Route::prefix('/twilio')->group(function () {
         Route::post('/lookup', 'TwilioController@sms')->name('twilio.sms');
     });
+});
+Route::prefix('radio')->group(function(){
+    Route::get('qsos/band/{band?}/mode/{mode?}', 'LogbookController@qsoGeoJson');
 });

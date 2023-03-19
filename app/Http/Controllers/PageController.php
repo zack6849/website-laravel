@@ -14,10 +14,16 @@ class PageController extends Controller
      */
     public function home(Request $request)
     {
-        return view('home');
+        return view('pages.home');
     }
 
-    public function photos(Request $request){
-        return view('photography');
+    public function photos(Request $request)
+    {
+        return view('pages.photography');
+    }
+
+    public function qsos(Request $request)
+    {
+        return view('pages.qsos');
     }
 }

@@ -44,4 +44,17 @@ return [
         ],
     ],
 
+    'flickr' => [
+        'api_key' => env('FLICKR_API_KEY'),
+        'gallery_uid' => env('FLICKR_GALLERY_USER')
+    ],
+
+    'mapbox' => [
+        'token' => env('MAPBOX_API_TOKEN')
+    ],
+
+    'qrz' => [
+        'key' => env('QRZ_API_KEY'),
+    ]
+
 ];

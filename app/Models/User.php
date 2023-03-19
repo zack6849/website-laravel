@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Models;
 
@@ -18,7 +19,6 @@ use Illuminate\Support\Carbon;
  * @method static Builder|User newModelQuery()
  * @method static Builder|User newQuery()
  * @method static Builder|User query()
- * @mixin \Eloquent
  * @property int $id
  * @property string $name
  * @property string $email
@@ -39,6 +39,7 @@ use Illuminate\Support\Carbon;
  * @property-read int|null $files_count
  * @property-read int|null $notifications_count
  * @method static Builder|User whereApiToken($value)
+ * @mixin \Eloquent
  */
 class User extends Authenticatable
 {

@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 
 /*
 |--------------------------------------------------------------------------
@@ -14,19 +16,20 @@
 
 Route::get('/', 'PageController@home')->name("home");
 Route::get('/photos', 'PageController@photos')->name('photography');
+Route::get('/qsos', 'PageController@qsos')->name('qsos');
 
-Auth::routes(['register' => false, ]);
+Auth::routes(['register' => false,]);
 
 //protected routes.
-Route::middleware(['auth'])->group(function(){
-    Route::prefix('/files')->group(function(){
+Route::middleware(['auth'])->group(function () {
+    Route::prefix('/files')->group(function () {
         Route::get('/', 'FileController@index')->name("file.index");
         Route::get('/new', 'FileController@create')->name("file.create");
         Route::put('/files', 'FileController@store')->name('file.store');
         Route::get('{file:filename}/delete', 'FileController@delete')->name('file.delete');
         Route::post('{file:filename}/delete', 'FileController@destroy')->name("file.destroy");
     });
-    Route::prefix("/lookup")->group(function(){
+    Route::prefix("/lookup")->group(function () {
         Route::get('/{phone_number}', 'TwilioController@lookup')->name("phone.lookup");
         Route::get('/{phone_number}/raw', 'TwilioController@raw')->name("phone.lookup.raw");
     });
@@ -37,6 +40,6 @@ Route::get('/files/{file:filename}', 'FileController@show')->name("file.show");
 
 //same thing as above, for backwards compatability. make any indexed uploads point to the new endpoint
 Route::get('/uploads/{file_name}', function ($file_name) {
-    return redirect(route('file.show', ['filename' => $file_name]), 301);
+    return redirect(route('file.show', ['file' => $file_name]), 301);
 });
 
