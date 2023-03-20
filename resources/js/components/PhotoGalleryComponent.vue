@@ -14,7 +14,6 @@ import axios from 'axios';
 export default {
     props: ['api_key', 'user_id'],
     mounted() {
-        console.log("Loading Photos for gallery");
         this.loadPhotos();
     },
     data() {
@@ -29,7 +28,6 @@ export default {
             flickr_api_url += '&api_key=' + encodeURIComponent(this.api_key);
             axios.get(flickr_api_url, {
                 transformRequest: [(data, headers) => {
-                    console.log(headers);
                     delete headers['X-CSRF-TOKEN'];
                     delete headers['X-Requested-With'];
                     return data;
@@ -38,7 +36,6 @@ export default {
                 //we should have photos.
                 if (response.status === 200 && response.data.stat === "ok") {
                     this.photos = response.data.photos.photo;
-                    console.log(this.photos)
                 }
             });
         }
