@@ -27,6 +27,7 @@ class Kernel extends ConsoleKernel
         // $schedule->command('inspire')
         //          ->hourly();
         $schedule->command('upload:scan')->everyMinute();
+        $schedule->command('logbook:import')->daily();
     }
 
     /**
