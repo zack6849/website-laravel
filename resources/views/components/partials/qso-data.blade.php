@@ -1,6 +1,7 @@
 <div>
     <b>{{$entry->mode}} QSO w/ {{$entry->callee->name}}</b><br>
-    <b>Date: {{$entry->created_at->format('Y-m-m')}}</b><br>
+    <b>Date: {{$entry->created_at->format('Y-m-m H:i:s')}}</b><br>
+    <b>Frequency: {{$entry->frequency}}Mhz</b><br>
     @if($entry->rst_received !== null)
         <b>RST Received: {{$entry->rst_received}}</b><br>
     @endif

@@ -25,4 +25,12 @@ class LogbookController extends Controller
             'features' => $features
         ];
     }
+
+    public function getWorkedModes(){
+        return LogbookEntry::select('mode')->distinct()->get()->pluck('mode');
+    }
+
+    public function getWorkedBands(){
+        return LogbookEntry::select('band')->distinct()->get()->pluck('band');
+    }
 }

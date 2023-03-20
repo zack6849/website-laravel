@@ -1,82 +1,107 @@
 <template>
     <div>
-        <div v-show="!state.loaded">
+        <div v-show="!this.loaded">
             Please wait, map loading...
+        </div>
+        <div class="flex justify-between bg-gray-200 p-2">
+            <h2>Showing <span v-text="this.qsoCount"/> QSOs</h2>
+            <div id="controls">
+                <select class="form-control" v-model="currentBand">
+                    <option v-for="band in bands" :value="band" :key="band" v-text="band">
+                    </option>
+                </select>
+                <select v-model="currentMode">
+                    <option v-for="mode in modes" :value="mode" :key="mode" v-text="mode">
+                    </option>
+                </select>
+            </div>
         </div>
         <div id="map"/>
     </div>
 </template>
 <script>
 import {Map, Popup} from 'maplibre-gl';
-import {shallowRef, onMounted, onUnmounted, markRaw, reactive} from 'vue';
 import {isMapboxURL, transformMapboxUrl} from 'maplibregl-mapbox-request-transformer'
 
 export default {
-
-    setup(props) {
-        const mapContainer = shallowRef('map');
-        const map = shallowRef(null);
-        const state = reactive({
-            loaded: false
-        })
-
-
-        const transformRequest = (url, resourceType) => {
-            if (isMapboxURL(url)) {
-                return transformMapboxUrl(url, resourceType, props.mapboxKey)
+    props: ['mapboxKey', 'config'],
+    data(){
+        return {
+            loaded: false,
+            contacts: [],
+            bands: [],
+            modes: [],
+            mapObject: {},
+            currentMode: 'SSB',
+            currentBand: '20M',
+        }
+    },
+    mounted() {
+        this.initMap();
+        this.fetchBands();
+        this.fetchModes();
+    },
+    methods: {
+        initMap() {
+            const transformRequest = (url, resourceType) => {
+                if (isMapboxURL(url)) {
+                    return transformMapboxUrl(url, resourceType, this.mapboxKey)
+                }
+                // Do any other transforms you want
+                return {url}
             }
 
-            // Do any other transforms you want
-            return {url}
-        }
-
-        onMounted(() => {
-
-            const initialState = {lng: -82.42480, lat: 27.48750, zoom: 4};
-
-            map.value = markRaw(new Map({
-                container: mapContainer.value,
+            this.mapObject = new Map({
+                container: 'map',
                 style: `mapbox://styles/mapbox/outdoors-v12`,
-                center: [initialState.lng, initialState.lat],
-                zoom: initialState.zoom,
-                transformRequest
-            }));
-            map.value.on('load', () => {
-                state.loaded = true;
-                onMapLoaded(map.value);
+                center: [this.config.lng, this.config.lat],
+                zoom: this.config.zoom,
+                transformRequest,
             });
-
-        });
-        onUnmounted(() => {
-            map.value?.remove();
-        });
-
-        function onMapLoaded(map) {
-            map.loadImage('/img/map-pin.png', function (error, image) {
+            this.mapObject.on('load', () => {
+                this.loaded = true;
+                this.onMapLoad(this.mapObject)
+            });
+        },
+        loadQsos() {
+            axios.get(this.apiUrl).then(response => {
+                //we should have photos.
+                if (response.status === 200) {
+                    this.contacts = response.data;
+                    this.updateMap();
+                }
+            });
+        },
+        fetchBands(){
+            axios.get('api/radio/bands').then(response => {
+                //we should have photos.
+                if (response.status === 200) {
+                    this.bands = response.data.sort();
+                }
+            });
+        },
+        fetchModes(){
+            axios.get('api/radio/modes').then(response => {
+                //we should have photos.
+                if (response.status === 200) {
+                    this.modes = response.data;
+                }
+            });
+        },
+        updateMap(){
+            this.mapObject.getSource('qsos').setData(this.contacts);
+        },
+        onMapLoad(map){
+            map.loadImage('/img/map-pin.png', (error, image) => {
                 map.addImage('pin', image)
             });
             map.addSource('qsos', {
                 type: 'geojson',
-                data: '/api/radio/qsos/band/20m/mode/SSB',
-                cluster: false,
+                data: {
+                    type: 'FeatureCollection',
+                    features: []
+                },
             });
-            map.on('click', 'qsos', function (e) {
-                var coordinates = e.features[0].geometry.coordinates.slice();
-                var description = e.features[0].properties.description;
-                // Ensure that if the map is zoomed out such that multiple
-                // copies of the feature are visible, the popup appears
-                // over the copy being pointed to.
-                while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-                    coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-                }
-
-                new Popup()
-                    .setLngLat(coordinates)
-                    .setHTML(description)
-                    .addTo(map);
-
-            })
-
             map.addLayer({
                 'id': 'qsos',
                 'type': 'symbol',
@@ -87,14 +112,38 @@ export default {
                     "icon-allow-overlap": true,
                 }
             });
+            map.on('click', 'qsos', function (e) {
+                var coordinates = e.features[0].geometry.coordinates.slice();
+                var description = e.features[0].properties.description;
+                // Ensure that if the map is zoomed out such that multiple
+                // copies of the feature are visible, the popup appears
+                // over the copy being pointed to.
+                while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                    coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+                }
+                new Popup()
+                    .setLngLat(coordinates)
+                    .setHTML(description)
+                    .addTo(map);
+            });
+            this.loadQsos();
         }
-
-        return {
-            map, mapContainer, state
-        };
     },
-    props: {
-        mapboxKey: String,
+    watch: {
+        currentBand: function (val) {
+            this.loadQsos();
+        },
+        currentMode: function (val) {
+            this.loadQsos();
+        }
+    },
+    computed: {
+        apiUrl() {
+            return `/api/radio/qsos/band/${this.currentBand}/mode/${this.currentMode}`;
+        },
+        qsoCount(){
+            return this.contacts?.features?.length ?? '...';
+        }
     }
 }
 
