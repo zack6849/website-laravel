@@ -4,7 +4,7 @@
  * building robust, powerful web applications using Vue and Laravel.
  */
 import "./bootstrap";
-import "@fortawesome/fontawesome-free/js/fontawesome";
+import "@fortawesome/fontawesome-free/js/all";
 import {createApp} from "vue/dist/vue.esm-bundler.js"
 import App from './components/App.vue'
 import technologyComponent from "./components/TechnologyComponent.vue";

@@ -15,7 +15,7 @@ $serve = $appDir . '/source';
 $env = $appDir . '/.env';
 $storage = $appDir . '/storage';
 $use_fpm = true;
-$fpm_service = 'php7.3-fpm';
+$fpm_service = 'php8.2-fpm';
 @endsetup
 
 @story('deploy')
