@@ -43,7 +43,7 @@ npm install
 echo "Installing PHP dependencies"
 composer install --no-interaction --quiet --no-dev --prefer-dist --optimize-autoloader
 echo "Compiling SCSS & JS"
-npm run production
+npm run build
 echo "Running migrations"
 php ./artisan migrate --force
 @endtask

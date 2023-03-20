@@ -101,6 +101,6 @@ export default {
 </script>
 <style>
 #map {
-    min-height: 60vh;
+    min-height: 80vh;
 }
 </style>
