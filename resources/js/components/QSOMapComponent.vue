@@ -25,7 +25,7 @@ import {isMapboxURL, transformMapboxUrl} from 'maplibregl-mapbox-request-transfo
 
 export default {
     props: ['mapboxKey', 'config'],
-    data(){
+    data() {
         return {
             loaded: false,
             contacts: [],
@@ -72,7 +72,7 @@ export default {
                 }
             });
         },
-        fetchBands(){
+        fetchBands() {
             axios.get('api/radio/bands').then(response => {
                 //we should have photos.
                 if (response.status === 200) {
@@ -80,7 +80,7 @@ export default {
                 }
             });
         },
-        fetchModes(){
+        fetchModes() {
             axios.get('api/radio/modes').then(response => {
                 //we should have photos.
                 if (response.status === 200) {
@@ -88,12 +88,18 @@ export default {
                 }
             });
         },
-        updateMap(){
+        updateMap() {
             this.mapObject.getSource('qsos').setData(this.contacts);
         },
-        onMapLoad(map){
+        onMapLoad(map) {
             map.loadImage('/img/map-pin.png', (error, image) => {
                 map.addImage('pin', image)
+            });
+            map.loadImage('/img/pota-logo.png', (error, image) => {
+                if(error){
+                    console.log(error);
+                }
+                map.addImage('tree', image)
             });
             map.addSource('qsos', {
                 type: 'geojson',
@@ -107,8 +113,8 @@ export default {
                 'type': 'symbol',
                 'source': 'qsos',
                 'layout': {
-                    'icon-image': 'pin',
-                    'icon-size': 0.025,
+                    'icon-image': '{icon}',
+                    'icon-size':{ type: 'identity', property: 'icon_size' } ,
                     "icon-allow-overlap": true,
                 }
             });
@@ -141,7 +147,7 @@ export default {
         apiUrl() {
             return `/api/radio/qsos/band/${this.currentBand}/mode/${this.currentMode}`;
         },
-        qsoCount(){
+        qsoCount() {
             return this.contacts?.features?.length ?? '...';
         }
     }

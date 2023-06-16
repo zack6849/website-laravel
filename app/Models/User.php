@@ -14,7 +14,7 @@ use Illuminate\Support\Carbon;
 /**
  * App\User
  *
- * @property-read Collection|\App\Models\File[] $files
+ * @property-read Collection|File[] $files
  * @property-read DatabaseNotificationCollection|DatabaseNotification[] $notifications
  * @method static Builder|User newModelQuery()
  * @method static Builder|User newQuery()

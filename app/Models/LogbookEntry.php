@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
-use Grpc\Call;
+use Database\Factories\LogbookEntryFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * App\Models\LogbookEntry
@@ -28,34 +30,38 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $to_longitude
  * @property int|null $distance distance in miles
  * @property string|null $comments
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property-read \App\Models\Callsign $callee
  * @property-read \App\Models\Callsign $station
- * @method static \Database\Factories\LogbookEntryFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder|LogbookEntry newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|LogbookEntry newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|LogbookEntry query()
- * @method static \Illuminate\Database\Eloquent\Builder|LogbookEntry whereBand($value)
- * @method static \Illuminate\Database\Eloquent\Builder|LogbookEntry whereComments($value)
- * @method static \Illuminate\Database\Eloquent\Builder|LogbookEntry whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|LogbookEntry whereDistance($value)
- * @method static \Illuminate\Database\Eloquent\Builder|LogbookEntry whereFrequency($value)
- * @method static \Illuminate\Database\Eloquent\Builder|LogbookEntry whereFromCallsign($value)
- * @method static \Illuminate\Database\Eloquent\Builder|LogbookEntry whereFromCoordinates($value)
- * @method static \Illuminate\Database\Eloquent\Builder|LogbookEntry whereFromGrid($value)
- * @method static \Illuminate\Database\Eloquent\Builder|LogbookEntry whereFromLatitude($value)
- * @method static \Illuminate\Database\Eloquent\Builder|LogbookEntry whereFromLongitude($value)
- * @method static \Illuminate\Database\Eloquent\Builder|LogbookEntry whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|LogbookEntry whereMode($value)
- * @method static \Illuminate\Database\Eloquent\Builder|LogbookEntry whereRstReceived($value)
- * @method static \Illuminate\Database\Eloquent\Builder|LogbookEntry whereRstSent($value)
- * @method static \Illuminate\Database\Eloquent\Builder|LogbookEntry whereToCallsign($value)
- * @method static \Illuminate\Database\Eloquent\Builder|LogbookEntry whereToCoordinates($value)
- * @method static \Illuminate\Database\Eloquent\Builder|LogbookEntry whereToGrid($value)
- * @method static \Illuminate\Database\Eloquent\Builder|LogbookEntry whereToLatitude($value)
- * @method static \Illuminate\Database\Eloquent\Builder|LogbookEntry whereToLongitude($value)
- * @method static \Illuminate\Database\Eloquent\Builder|LogbookEntry whereUpdatedAt($value)
+ * @method static LogbookEntryFactory factory($count = null, $state = [])
+ * @method static Builder|LogbookEntry newModelQuery()
+ * @method static Builder|LogbookEntry newQuery()
+ * @method static Builder|LogbookEntry query()
+ * @method static Builder|LogbookEntry whereBand($value)
+ * @method static Builder|LogbookEntry whereComments($value)
+ * @method static Builder|LogbookEntry whereCreatedAt($value)
+ * @method static Builder|LogbookEntry whereDistance($value)
+ * @method static Builder|LogbookEntry whereFrequency($value)
+ * @method static Builder|LogbookEntry whereFromCallsign($value)
+ * @method static Builder|LogbookEntry whereFromCoordinates($value)
+ * @method static Builder|LogbookEntry whereFromGrid($value)
+ * @method static Builder|LogbookEntry whereFromLatitude($value)
+ * @method static Builder|LogbookEntry whereFromLongitude($value)
+ * @method static Builder|LogbookEntry whereId($value)
+ * @method static Builder|LogbookEntry whereMode($value)
+ * @method static Builder|LogbookEntry whereRstReceived($value)
+ * @method static Builder|LogbookEntry whereRstSent($value)
+ * @method static Builder|LogbookEntry whereToCallsign($value)
+ * @method static Builder|LogbookEntry whereToCoordinates($value)
+ * @method static Builder|LogbookEntry whereToGrid($value)
+ * @method static Builder|LogbookEntry whereToLatitude($value)
+ * @method static Builder|LogbookEntry whereToLongitude($value)
+ * @method static Builder|LogbookEntry whereUpdatedAt($value)
+ * @property int|null $park_id
+ * @property string $category
+ * @method static Builder|LogbookEntry whereCategory($value)
+ * @method static Builder|LogbookEntry whereParkId($value)
  * @mixin \Eloquent
  */
 class LogbookEntry extends Model

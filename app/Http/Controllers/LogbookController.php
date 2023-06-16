@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\LogbookEntryResource;
 use App\Models\LogbookEntry;
 use GeoJson\Feature\Feature;
 use GeoJson\Geometry\Point;
@@ -15,9 +16,10 @@ class LogbookController extends Controller
             ->with(['station', 'callee'])
             ->where('mode', $mode)->get()->each(function(LogbookEntry $entry) use (&$features){
                 $location = new Point([floatval($entry->to_longitude), floatval($entry->to_latitude)]);
+                $resource = new LogbookEntryResource($entry);
                 $features[] = new Feature($location, [
-                    'description' => view('components.partials.qso-data', ['entry' => $entry])->render()
-                ]);
+                    'description' => view('components.partials.qso-data', ['entry' => $entry])->render(),
+                    ... $resource->toArray(request()) ] );
 
             });
         return [

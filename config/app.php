@@ -177,6 +177,8 @@ return [
         \App\Providers\TwilioProvider::class,
         \App\Providers\HomeSnapListingProvider::class,
         \App\Providers\MainheadGridResolutionServiceProvider::class,
+        \App\Providers\ParksOnTheAirServiceProvider::class,
+        \App\Providers\QRZLogbookProvider::class,
     ],
 
     /*

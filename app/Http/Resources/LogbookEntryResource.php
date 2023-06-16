@@ -25,6 +25,12 @@ class LogbookEntryResource extends JsonResource
             'from_callsign' => $this->station->name,
             'to_callsign' => $this->callee->name
         ]);
+        $value['icon_size'] = 0.025;
+        $value['icon'] = 'pin';
+        if($this->category == 'POTA'){
+            $value['icon'] = 'tree';
+            $value['icon_size'] = 0.25;
+        }
         unset($value['station']);
         unset($value['callee']);
         return $value;

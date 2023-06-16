@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use Database\Factories\ITURegionFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * App\Models\ITURegion
@@ -11,17 +14,17 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $id
  * @property string $name
  * @property string $description
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @method static \Database\Factories\ITURegionFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder|ITURegion newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|ITURegion newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder|ITURegion query()
- * @method static \Illuminate\Database\Eloquent\Builder|ITURegion whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder|ITURegion whereDescription($value)
- * @method static \Illuminate\Database\Eloquent\Builder|ITURegion whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|ITURegion whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder|ITURegion whereUpdatedAt($value)
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @method static ITURegionFactory factory($count = null, $state = [])
+ * @method static Builder|ITURegion newModelQuery()
+ * @method static Builder|ITURegion newQuery()
+ * @method static Builder|ITURegion query()
+ * @method static Builder|ITURegion whereCreatedAt($value)
+ * @method static Builder|ITURegion whereDescription($value)
+ * @method static Builder|ITURegion whereId($value)
+ * @method static Builder|ITURegion whereName($value)
+ * @method static Builder|ITURegion whereUpdatedAt($value)
  * @mixin \Eloquent
  */
 class ITURegion extends Model
