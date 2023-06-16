@@ -55,6 +55,9 @@ return [
 
     'qrz' => [
         'key' => env('QRZ_API_KEY'),
-    ]
+    ],
 
+    'discord' => [
+        'webhook_uri' => env('DISCORD_WEBHOOK_URI')
+    ]
 ];

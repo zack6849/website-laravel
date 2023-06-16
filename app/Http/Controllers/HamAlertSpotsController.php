@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\HamAlertSpotStoreRequest;
 use App\Models\HamAlertSpot;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
 
 class HamAlertSpotsController extends Controller
 {
@@ -23,6 +24,9 @@ class HamAlertSpotsController extends Controller
         $spot->spotter_callsign = $request->input('spotter');
         $spot->created_at = Carbon::parse($request->input('time'), 'UTC');
         $spot->save();
+        Http::retry(3, 100)->post(config('services.discord.webhook_uri'), [
+            'content' => $this->formatSpot($spot)
+        ]);
         return $spot;
     }
 
@@ -42,7 +46,7 @@ class HamAlertSpotsController extends Controller
     private function formatSpot(HamAlertSpot $spot)
     {
         return <<<EOL
-        {$spot->callsign} was last spotted by {$spot->spotter_callsign} on {$spot->mode} at {$spot->created_at->toTimeString()} UTC ({$spot->created_at->diffForHumans()})
+        {$spot->callsign} was spotted by {$spot->spotter_callsign} on {$spot->band} {$spot->mode} on {$spot->frequency} <t:{$spot->created_at->unix()}:R>
         EOL;
     }
 }
