@@ -24,9 +24,14 @@ Route::middleware("auth:api")->group(function () {
     Route::prefix('/twilio')->group(function () {
         Route::post('/lookup', 'TwilioController@sms')->name('twilio.sms');
     });
+
+    Route::prefix('/radio')->group(function () {
+        Route::post('spots', 'HamAlertSpotsController@save');
+    });
 });
 Route::prefix('radio')->group(function(){
     Route::get('qsos/band/{band?}/mode/{mode?}', 'LogbookController@qsoGeoJson');
     Route::get('modes', 'LogbookController@getWorkedModes');
     Route::get('bands', 'LogbookController@getWorkedBands');
+    Route::get('spots', 'HamAlertSpotsController@index');
 });
