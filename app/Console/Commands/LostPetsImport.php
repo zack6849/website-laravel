@@ -41,7 +41,7 @@ class LostPetsImport extends Command
                 $this->getPage($data['lat'],
                     $data['lon'],
                     $i,
-                    config('services.petco.search_radius')
+                    radius: config('services.petco.search_radius')
                 )
             )->filter(function($item){
                 return $item['typeKey'] != 'search.headerRow.foundPetNearbyList';
