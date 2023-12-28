@@ -179,6 +179,7 @@ return [
         \App\Providers\MainheadGridResolutionServiceProvider::class,
         \App\Providers\ParksOnTheAirServiceProvider::class,
         \App\Providers\QRZLogbookProvider::class,
+        \App\Providers\GeocoderProvider::class,
     ],
 
     /*

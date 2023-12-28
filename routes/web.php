@@ -14,6 +14,9 @@ declare(strict_types=1);
 */
 
 
+use App\Models\LostPet;
+use Carbon\Carbon;
+
 Route::get('/', 'PageController@home')->name("home");
 Route::get('/photos', 'PageController@photos')->name('photography');
 Route::get('/qsos', 'PageController@qsos')->name('qsos');
@@ -41,5 +44,14 @@ Route::get('/files/{file:filename}', 'FileController@show')->name("file.show");
 //same thing as above, for backwards compatability. make any indexed uploads point to the new endpoint
 Route::get('/uploads/{file_name}', function ($file_name) {
     return redirect(route('file.show', ['file' => $file_name]), 301);
+});
+
+Route::get('/lost-pets', function(){
+    return view('pages.lost-pets', [
+        'pets' => LostPet::query()
+            ->where('intake_date', '>=', Carbon::parse('2023-12-21')->startOfDay())
+            ->orderByDesc('intake_date')
+            ->get()
+    ]);
 });
 

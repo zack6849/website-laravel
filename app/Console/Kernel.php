@@ -24,10 +24,9 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')
-        //          ->hourly();
         $schedule->command('upload:scan')->everyMinute();
         $schedule->command('logbook:import')->daily();
+        $schedule->command('lost-pets:import')->hourly();
     }
 
     /**
