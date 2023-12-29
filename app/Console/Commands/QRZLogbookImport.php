@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Symfony\Component\Console\Command\Command as CommandAlias;
 
 class QRZLogbookImport extends Command
 {
@@ -30,6 +31,6 @@ class QRZLogbookImport extends Command
         $this->info("Syncing logbook from QRZ.com");
         dispatch_sync(resolve(\App\Jobs\QRZLogbookImport::class));
         $this->info("Sync complete");
-        return Command::SUCCESS;
+        return CommandAlias::SUCCESS;
     }
 }

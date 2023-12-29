@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\File;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\Console\Command\Command as CommandAlias;
 
 class UploadScan extends Command
 {
@@ -60,6 +61,6 @@ class UploadScan extends Command
             $file->save();
             $this->info("- Added $file_path to the database");
         }
-        return 1;
+        return CommandAlias::SUCCESS;
     }
 }
