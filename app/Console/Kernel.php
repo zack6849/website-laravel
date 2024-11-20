@@ -26,7 +26,6 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('upload:scan')->everyMinute();
         $schedule->command('logbook:import')->daily();
-        $schedule->command('lost-pets:import')->hourly();
     }
 
     /**

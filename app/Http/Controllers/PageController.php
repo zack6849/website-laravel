@@ -1,28 +1,24 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use Illuminate\Contracts\Support\Renderable;
 
 class PageController extends Controller
 {
-
-    /**
-     * Show the application dashboard.
-     *
-     * @return \Illuminate\Contracts\Support\Renderable
-     */
-    public function home(Request $request)
+    public function home(): Renderable
     {
         return view('pages.home');
     }
 
-    public function photos(Request $request)
+    public function photos(): Renderable
     {
         return view('pages.photography');
     }
 
-    public function qsos(Request $request)
+    public function qsos(): Renderable
     {
         return view('pages.qsos');
     }

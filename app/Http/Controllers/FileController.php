@@ -4,35 +4,24 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UploadFileRequest;
 use App\Models\File;
-use App\Models\User;
+use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
-use League\Flysystem\FileNotFoundException;
 
 class FileController extends Controller
 {
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|Response
-     */
-    public function index()
+    public function index(): Renderable
     {
         return view('files.index');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|Response
-     */
-    public function create()
+
+    public function create(): Renderable
     {
         return view('files.create');
     }
@@ -44,13 +33,14 @@ class FileController extends Controller
     {
         $uploaded_file = $request->file("file");
         $name = $uploaded_file->getClientOriginalName();
+        $storagePath = config('upload.storage.path');
         //create a new filename if there's a duplicate, since it's effectively a slug.
         while (File::whereOriginalFilename($name)->exists()) {
-            $name = implode(".", [Str::random(16),  $uploaded_file->getClientOriginalExtension()]);
+            $name = implode(".", [Str::random(),  $uploaded_file->getClientOriginalExtension()]);
         }
         $file = new File();
-        $file->file_location = $uploaded_file->storeAs(config('upload.storage.path'), $name);
-        $file->filename = str_replace(config('upload.storage.path') . DIRECTORY_SEPARATOR, '', $file->file_location);
+        $file->file_location = $uploaded_file->storeAs($storagePath, $name);
+        $file->filename = str_replace($storagePath . DIRECTORY_SEPARATOR, '', $file->file_location);
         $file->original_filename = $name;
         $file->mime = $uploaded_file->getMimeType();
         $file->user_id = auth()->user()->id;
@@ -67,13 +57,6 @@ class FileController extends Controller
         return redirect(route('file.index'));
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param $filename
-     * @return Response|\Symfony\Component\HttpFoundation\Response
-     * @throws FileNotFoundException
-     */
     public function show(File $file)
     {
         //stream the file, useful for large files.
@@ -89,7 +72,8 @@ class FileController extends Controller
     /**
      * Remove the specified resource from storage via API
      *
-     * @param int $id
+     * @param Request $request
+     * @param File $file
      * @return RedirectResponse|string[]
      */
     public function destroy(Request $request, File $file)
@@ -99,16 +83,16 @@ class FileController extends Controller
             $success = Storage::delete($file->file_location);
         }
         $success = $success && $file->delete();
-        if ($success) {
-            if($request->expectsJson()){
-                return ['status' => 'file deleted'];
+        if (!$success) {
+            if ($request->expectsJson()) {
+                return ['status' => 'File deletion failed'];
             }
-            return Redirect::to(route('file.index'))->with('status', 'Your file was deleted!');
+            return Redirect::to(route('file.index'))->with('status', 'File deletion failed :(');
         }
-        if($request->expectsJson()){
-            return ['status' => 'File deletion failed'];
+        if ($request->expectsJson()) {
+            return ['status' => 'file deleted'];
         }
-        return Redirect::to(route('file.index'))->with('status', 'File deletion failed :(');
+        return Redirect::to(route('file.index'))->with('status', 'Your file was deleted!');
     }
 
 

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Providers;
+namespace App\Services;
 
-use Illuminate\Support\ServiceProvider;
+use Closure;
 
 /**
  * Class MainheadGridResolutionService
@@ -12,7 +12,7 @@ use Illuminate\Support\ServiceProvider;
  * Used to convert HAM Mainhead grid locators (eg: FN42) to lat/lon coordinates
  * Inspired by / ported from https://github.com/gravypod/maidenhead/blob/master/maidenhead.php
  */
-class MainheadGridResolutionServiceProvider extends ServiceProvider
+class MainheadGridResolutionService
 {
     private const MAX_LAT = 90;
     private const MIN_LAT = -90;
@@ -22,14 +22,7 @@ class MainheadGridResolutionServiceProvider extends ServiceProvider
     private const LAT_DISTANCE = self::MAX_LAT - self::MIN_LAT;
     private const LON_DISTANCE = self::MAX_LON - self::MIN_LON;
 
-    public function register(): void
-    {
-        $this->app->singleton(MainheadGridResolutionServiceProvider::class, function ($app) {
-            return new MainheadGridResolutionServiceProvider($app);
-        });
-    }
-
-    private function subdivisor(): \Closure
+    private function subdivisor(): Closure
     {
         $last = array(18, 10, 24, 10);
         $i = 0;
@@ -41,7 +34,7 @@ class MainheadGridResolutionServiceProvider extends ServiceProvider
         };
     }
 
-    function parseDigit($digit): float|bool|int
+    private function parseDigit($digit): float|bool|int
     {
         $alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         $value = strpos($alphabet, $digit);
@@ -51,7 +44,7 @@ class MainheadGridResolutionServiceProvider extends ServiceProvider
         return $value;
     }
 
-    function getGridSquare(string $squareId): array
+    public function getGridSquare(string $squareId): array
     {
         if (strlen($squareId) % 2 != 0) {
             return array(null, null, null, null);

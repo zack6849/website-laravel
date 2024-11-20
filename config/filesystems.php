@@ -64,6 +64,18 @@ return [
             'url' => env('AWS_URL'),
         ],
 
+        'spaces' => [
+            'driver' => 's3',
+            'key' => env('DO_SPACES_KEY_ID'),
+            'secret' => env('DO_SPACES_SECRET_ACCESS_KEY'),
+            'region' => env('DO_SPACES_DEFAULT_REGION'),
+            'bucket' => env('DO_SPACES_BUCKET'),
+            'endpoint' => implode('', [
+                "https://",
+                env('DO_SPACES_DEFAULT_REGION'),
+                ".digitaloceanspaces.com"
+            ]),
+            'use_path_style_endpoint' => env('DO_SPACES_USE_PATH_STYLE_ENDPOINT', false),
+        ]
     ],
-
 ];

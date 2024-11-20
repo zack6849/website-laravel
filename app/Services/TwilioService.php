@@ -1,26 +1,13 @@
 <?php
 
-namespace App\Providers;
+namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\ServiceProvider;
 use Twilio\Rest\Client;
 
-class TwilioProvider extends ServiceProvider
+class TwilioService
 {
-
-    /**
-     * Register services.
-     *
-     * @return void
-     */
-    public function register()
-    {
-        $this->app->singleton(TwilioProvider::class, function ($app) {
-            return new TwilioProvider($app);
-        });
-    }
-
     public function lookupNumber($phone_number)
     {
         $cache_key = "lookups" . md5($phone_number);
@@ -114,15 +101,15 @@ class TwilioProvider extends ServiceProvider
                     $address['country']
                 ]);
             }
-            if(!empty($addresses)){
+            if (!empty($addresses)) {
                 $response .= "Likely Addresses: \n";
-                foreach ($addresses as $address){
+                foreach ($addresses as $address) {
                     $response .= " - $address\n";
                 }
             }
         }
         $response .= "Other Associated Names:\n";
-        foreach ($associated as $associated_name){
+        foreach ($associated as $associated_name) {
             $response .= " - $associated_name\n";
         }
         return $response;

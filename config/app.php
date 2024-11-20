@@ -56,6 +56,8 @@ return [
 
     'asset_url' => env('ASSET_URL', null),
 
+    'upload_storage' => env('UPLOAD_STORAGE', 'local'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
@@ -174,12 +176,6 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-        \App\Providers\TwilioProvider::class,
-        \App\Providers\HomeSnapListingProvider::class,
-        \App\Providers\MainheadGridResolutionServiceProvider::class,
-        \App\Providers\ParksOnTheAirServiceProvider::class,
-        \App\Providers\QRZLogbookProvider::class,
-        \App\Providers\GeocoderProvider::class,
     ],
 
     /*
@@ -194,7 +190,6 @@ return [
     */
 
     'aliases' => [
-
         'App' => Illuminate\Support\Facades\App::class,
         'Arr' => Illuminate\Support\Arr::class,
         'Artisan' => Illuminate\Support\Facades\Artisan::class,

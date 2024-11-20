@@ -10,16 +10,17 @@ use GeoJson\Geometry\Point;
 
 class LogbookController extends Controller
 {
-    public function qsoGeoJson($band = '20m', $mode = 'SSB'){
+    public function geoJSON($band = '20m', $mode = 'SSB')
+    {
         $features = [];
         LogbookEntry::where('band', $band)
             ->with(['station', 'callee'])
-            ->where('mode', $mode)->get()->each(function(LogbookEntry $entry) use (&$features){
+            ->where('mode', $mode)->get()->each(function (LogbookEntry $entry) use (&$features) {
                 $location = new Point([floatval($entry->to_longitude), floatval($entry->to_latitude)]);
                 $resource = new LogbookEntryResource($entry);
                 $features[] = new Feature($location, [
                     'description' => view('components.partials.qso-data', ['entry' => $entry])->render(),
-                    ... $resource->toArray(request()) ] );
+                    ... $resource->toArray(request())]);
 
             });
         return [
@@ -28,11 +29,13 @@ class LogbookController extends Controller
         ];
     }
 
-    public function getWorkedModes(){
+    public function getWorkedModes()
+    {
         return LogbookEntry::select('mode')->distinct()->get()->pluck('mode');
     }
 
-    public function getWorkedBands(){
+    public function getWorkedBands()
+    {
         return LogbookEntry::select('band')->distinct()->get()->pluck('band');
     }
 }

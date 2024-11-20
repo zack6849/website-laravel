@@ -4,7 +4,9 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
@@ -38,6 +40,7 @@ use Illuminate\Support\Carbon;
  */
 class File extends Model
 {
+    use HasFactory;
 
     protected $guarded = [
         'id',
@@ -45,24 +48,20 @@ class File extends Model
         'file_location',
     ];
 
-    public function user(){
+    public function user(): BelongsTo
+    {
         return $this->belongsTo(User::class);
     }
 
-    public function scopeSearch(Builder $builder, $search){
+    public function scopeSearch(Builder $builder, $search): Builder
+    {
         return $builder->where('filename', 'like', "%$search%")
             ->orWhere('original_filename', 'like', "%$search%")
             ->orWhere('mime', 'like', "%$search%");
     }
 
-    /**
-     * Find all files belonging to a user
-     * @see User::files()
-     * @param Builder $builder
-     * @param $user
-     * @return Builder
-     */
-    public function scopeForUser(Builder $builder, $user){
+    public function scopeForUser(Builder $builder, $user): Builder
+    {
         return $builder->where('user_id', '=', $user->id);
     }
 }
