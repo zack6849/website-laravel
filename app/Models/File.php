@@ -36,6 +36,7 @@ use Illuminate\Support\Carbon;
  * @method static Builder|File whereFilename($value)
  * @method static Builder|File whereSize($value)
  * @method static Builder|File forUser($user)
+ * @method static \Database\Factories\FileFactory factory($count = null, $state = [])
  * @mixin \Eloquent
  */
 class File extends Model

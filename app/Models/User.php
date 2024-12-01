@@ -40,6 +40,7 @@ use Illuminate\Support\Carbon;
  * @property-read int|null $files_count
  * @property-read int|null $notifications_count
  * @method static Builder|User whereApiToken($value)
+ * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
  * @mixin \Eloquent
  */
 class User extends Authenticatable

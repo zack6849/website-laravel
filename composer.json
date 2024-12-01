@@ -10,6 +10,13 @@
     "require": {
         "php": "^8.2",
         "ext-json": "*",
+        "ext-intl": "*",
+        "ext-bcmath": "*",
+        "ext-curl": "*",
+        "ext-mbstring": "*",
+        "ext-tokenizer": "*",
+        "ext-xml": "*",
+        "ext-zip": "*",
         "intervention/image": "^2.5",
         "j4nr6n/adif": "^2.0",
         "jmikola/geojson": "^1.1",
