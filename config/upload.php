@@ -1,9 +1,11 @@
 <?php
 return [
     'storage' => [
-        'path' => env('uploads.storage_path', 'user_uploads'),
+        'disk' => env('UPLOAD_DISK', 'spaces'),
+        'path' => env('UPLOAD_PATH', 'site_uploads'),
         //2 GiB max filesize
-        'max_filesize' => env('uploads.max_filesize', 2048 * 1024)
+        'max_filesize' => env('UPLOAD_MAX_FILESIZE', 2048 * 1024),
+        'public_url_prefix' => env('UPLOAD_PREFIX', 'https://files.zcraig.me'),
     ],
 ];
 ?>

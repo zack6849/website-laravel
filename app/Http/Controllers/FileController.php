@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UploadFileRequest;
+use App\Http\Resources\UploadedFileResource;
 use App\Models\File;
+use App\Services\FileUploadService;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,6 +16,13 @@ use Illuminate\Support\Str;
 
 class FileController extends Controller
 {
+
+    public function __construct(
+        private FileUploadService $uploadService
+    )
+    {
+
+    }
 
     public function index(): Renderable
     {
@@ -31,42 +40,11 @@ class FileController extends Controller
      */
     public function store(UploadFileRequest $request)
     {
-        $uploaded_file = $request->file("file");
-        $name = $uploaded_file->getClientOriginalName();
-        $storagePath = config('upload.storage.path');
-        //create a new filename if there's a duplicate, since it's effectively a slug.
-        while (File::whereOriginalFilename($name)->exists()) {
-            $name = implode(".", [Str::random(),  $uploaded_file->getClientOriginalExtension()]);
-        }
-        $file = new File();
-        $file->file_location = $uploaded_file->storeAs($storagePath, $name);
-        $file->filename = str_replace($storagePath . DIRECTORY_SEPARATOR, '', $file->file_location);
-        $file->original_filename = $name;
-        $file->mime = $uploaded_file->getMimeType();
-        $file->user_id = auth()->user()->id;
-        $file->size = Storage::size($file->file_location);
-        $file->save();
-        if($request->expectsJson()){
-            return [
-                'file' => $file,
-                'view_url' => route('file.show', ['file' => $file->filename]),
-                //signed route, so you can't tamper with the deletion URL and change IDs or something.
-                'delete_url' => URL::signedRoute('file.delete', $file)
-            ];
+        $file = $this->uploadService->storeUploadedFile($request->file('file'));
+        if ($request->expectsJson()) {
+            return new UploadedFileResource($file);
         }
         return redirect(route('file.index'));
-    }
-
-    public function show(File $file)
-    {
-        //stream the file, useful for large files.
-        $stream = Storage::getDriver()->readStream($file->file_location);
-        return response()->stream(function () use ($stream) {
-            fpassthru($stream);
-        }, 200, [
-            'Content-Type' => $file->mime,
-            'Content-disposition' => 'inline; filename="' . $file->original_filename . '"'
-        ]);
     }
 
     /**
@@ -78,11 +56,7 @@ class FileController extends Controller
      */
     public function destroy(Request $request, File $file)
     {
-        $success = false;
-        if (Storage::exists($file->file_location)) {
-            $success = Storage::delete($file->file_location);
-        }
-        $success = $success && $file->delete();
+        $success = $this->uploadService->delete($file);
         if (!$success) {
             if ($request->expectsJson()) {
                 return ['status' => 'File deletion failed'];

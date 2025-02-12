@@ -43,12 +43,6 @@ class File extends Model
 {
     use HasFactory;
 
-    protected $guarded = [
-        'id',
-        'user_id',
-        'file_location',
-    ];
-
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -64,5 +58,13 @@ class File extends Model
     public function scopeForUser(Builder $builder, $user): Builder
     {
         return $builder->where('user_id', '=', $user->id);
+    }
+
+    public function getUrlAttribute(){
+        return sprintf("%s/%s/%s",
+            config('upload.storage.public_url_prefix'),
+            config('upload.storage.path'),
+            $this->filename
+        );
     }
 }

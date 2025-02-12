@@ -21,13 +21,11 @@ Route::get('/', 'PageController@home')->name("home");
 Route::get('/photos', 'PageController@photos')->name('photography');
 Route::get('/qsos', 'PageController@qsos')->name('qsos');
 
-Auth::routes(['register' => false,]);
+Auth::routes(['register' => false]);
 
-//protected routes.
 Route::prefix('/files')->controller(FileController::class)->group(function () {
     Route::prefix('/files/{file:filename}')->group(function () {
         //public route
-        Route::get('/', 'show')->name("file.show");
         Route::middleware(['auth'])->group(function () {
             Route::get('/delete', 'delete')->name('file.delete');
             Route::post('/delete', 'destroy')->name("file.destroy");
@@ -40,14 +38,8 @@ Route::prefix('/files')->controller(FileController::class)->group(function () {
     });
 });
 
-Route::prefix('/lookup')->controller(TwilioController::class)->group(function() {
+Route::prefix('/lookup')->middleware(['auth'])->controller(TwilioController::class)->group(function() {
     Route::get('/{phone_number}', 'lookup')->name("phone.lookup");
     Route::get('/{phone_number}/raw', 'rawLookup')->name("phone.lookup.raw");
-});
-
-
-//same thing as above, for backwards compatability. make any indexed uploads point to the new endpoint
-Route::get('/uploads/{file_name}', function ($file_name) {
-    return redirect(route('file.show', ['file' => $file_name]), 301);
 });
 

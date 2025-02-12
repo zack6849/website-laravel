@@ -32,3 +32,9 @@
         </div>
     </main>
 @endsection
+
+@if(isset($vue))
+    @push('scripts')
+        @vite('resources/js/vue.js')
+    @endpush
+@endif

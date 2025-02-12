@@ -21,18 +21,10 @@
 </head>
 <body class="h-screen">
 <div id="app">
-    <div id="header">
-        <x-navigation.header/>
-    </div>
-    <div id="content" class="container-fluid">
         @yield('content')
-    </div>
-    <div id="footer">
-        <x-navigation.footer/>
-    </div>
 </div>
 @livewireScripts
-@vite('resources/js/app.js')
 @stack('scripts')
+@vite('resources/js/app.js')
 </body>
 </html>

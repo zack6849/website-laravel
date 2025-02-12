@@ -3,9 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\DXCCEntity;
-use App\Models\ITURegion;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Storage;
 
 class DXCCEntitySeeder extends Seeder
 {
@@ -16,7 +15,8 @@ class DXCCEntitySeeder extends Seeder
      */
     public function run()
     {
-        $data = collect(json_decode(\Storage::get('seed/dxcc.json'), true)['dxcc'])->where('deleted', '=', false);
+        $json = Storage::get('seed/dxcc.json');
+        $data = collect(json_decode($json, true)['dxcc'])->where('deleted', '=', false);
         foreach ($data as $entityData){
             DXCCEntity::factory()->create([
                 'name' => $entityData['name'],

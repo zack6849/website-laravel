@@ -2,10 +2,10 @@ services:
     web:
       build:
         context: .
-        dockerfile: .deployment/docker/Dockerfile
+        dockerfile: .docker/Dockerfile
       ports:
         - "80:80"
         - "443:443"
-      environment:
-        - APP_ENV=dev
-        - APP_DEBUG=true
+      volumes:
+        - ./data:/var/www/html/storage
+        - .env:/var/www/html/.env

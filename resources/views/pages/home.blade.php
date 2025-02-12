@@ -1,11 +1,11 @@
-<x-base-page title="Index" noheader="true">
+<x-base-page title="Index" noheader="true" vue="true">
     <div class="flex container mx-auto mb-6">
         <div class="hidden lg:visible lg:block mr-10">
             <img src="{{asset('img/profile.jpg')}}" class="rounded-full w-48">
         </div>
         <div>
             <h1 class="font-light text-5xl p2">Hello There</h1>
-            <p class="pt-2">I'm Zack, I'm a {{Carbon\Carbon::create(1997, 7 , 24)->diffInYears(Carbon\Carbon::now())}} year old Full-Stack Web Developer, Radio Enthusiast and Hobbyist Photographer from the Tampa Bay Area.</p>
+            <p class="pt-2">I'm Zack, I'm a {{(int) Carbon\Carbon::create(1997, 7 , 24)->diffInYears(Carbon\Carbon::now())}} year old Full-Stack Web Developer, Radio Enthusiast and Hobbyist Photographer from the Tampa Bay Area.</p>
             <p>I like to solve problems and take pictures. This is my website / portfolio / dumping ground.</p>
             <p><b>Nice to meet you.</b></p>
             <div class="flex flex-wrap flex-row items-center justify-around my-6 ">

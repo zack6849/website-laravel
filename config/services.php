@@ -68,5 +68,17 @@ return [
     ],
     'geoapify' => [
         'key' => env('GEOAPIFY_API_KEY')
+    ],
+    'digitalocean' => [
+        'key' => env('DO_ACCESS_KEY'),
+        'cdn' => [
+            'id' => env('DO_CDN_ID'),
+        ]
+    ],
+    'spaces' => [
+        'key' => env('DO_SPACES_KEY_ID'),
+        'secret' => env('DO_SPACES_SECRET_ACCESS_KEY'),
+        'region' => env('DO_SPACES_DEFAULT_REGION'),
+        'bucket' => env('DO_SPACES_BUCKET'),
     ]
 ];
