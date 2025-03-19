@@ -30,7 +30,7 @@ Route::middleware("auth:api")->group(function () {
     });
 });
 Route::prefix('radio')->group(function(){
-    Route::get('qsos/band/{band?}/mode/{mode?}', 'LogbookController@qsoGeoJson');
+    Route::get('qsos/band/{band?}/mode/{mode?}', 'LogbookController@getGeoJSON');
     Route::get('modes', 'LogbookController@getWorkedModes');
     Route::get('bands', 'LogbookController@getWorkedBands');
     Route::get('spots', 'HamAlertSpotsController@index');

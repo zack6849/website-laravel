@@ -24,22 +24,32 @@ Route::get('/qsos', 'PageController@qsos')->name('qsos');
 Auth::routes(['register' => false]);
 
 Route::prefix('/files')->controller(FileController::class)->group(function () {
-    Route::prefix('/files/{file:filename}')->group(function () {
-        //public route
-        Route::middleware(['auth'])->group(function () {
-            Route::get('/delete', 'delete')->name('file.delete');
-            Route::post('/delete', 'destroy')->name("file.destroy");
-        });
-    });
+    //protected file routes
     Route::middleware(['auth'])->group(function () {
         Route::get('/', 'index')->name("file.index");
         Route::get('/new', 'create')->name("file.create");
         Route::put('/files', 'store')->name('file.store');
     });
+    //filename specific routes
+    Route::prefix('/{file:filename}/')->group(function () {
+        //public route
+        Route::get('/', 'show')->name('file.show');
+        //protected filename specific routes
+        Route::middleware(['auth'])->group(function () {
+            Route::get('/delete', 'delete')->name('file.delete');
+            Route::post('/delete', 'destroy')->name("file.destroy");
+        });
+    });
+
 });
 
 Route::prefix('/lookup')->middleware(['auth'])->controller(TwilioController::class)->group(function() {
     Route::get('/{phone_number}', 'lookup')->name("phone.lookup");
     Route::get('/{phone_number}/raw', 'rawLookup')->name("phone.lookup.raw");
+});
+
+//Redirects for files to new URl format
+Route::get('/uploads/{file:filename}', function(\App\Models\File $file){
+    return redirect($file->url, 301)->name('file.old.redirect');
 });
 

@@ -7,10 +7,11 @@ use App\Http\Resources\LogbookEntryResource;
 use App\Models\LogbookEntry;
 use GeoJson\Feature\Feature;
 use GeoJson\Geometry\Point;
+use Illuminate\Support\Collection;
 
 class LogbookController extends Controller
 {
-    public function geoJSON($band = '20m', $mode = 'SSB')
+    public function getGeoJSON($band = '20m', $mode = 'SSB'): array
     {
         $features = [];
         LogbookEntry::where('band', $band)
@@ -29,12 +30,12 @@ class LogbookController extends Controller
         ];
     }
 
-    public function getWorkedModes()
+    public function getWorkedModes(): Collection
     {
         return LogbookEntry::select('mode')->distinct()->get()->pluck('mode');
     }
 
-    public function getWorkedBands()
+    public function getWorkedBands(): Collection
     {
         return LogbookEntry::select('band')->distinct()->get()->pluck('band');
     }

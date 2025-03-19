@@ -3,11 +3,13 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Database\Factories\FileFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\URL;
 
 /**
  * App\File
@@ -36,12 +38,22 @@ use Illuminate\Support\Carbon;
  * @method static Builder|File whereFilename($value)
  * @method static Builder|File whereSize($value)
  * @method static Builder|File forUser($user)
- * @method static \Database\Factories\FileFactory factory($count = null, $state = [])
+ * @method static FileFactory factory($count = null, $state = [])
+ * @property-read string $delete_url
+ * @property-read mixed $url
  * @mixin \Eloquent
  */
 class File extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'file_location',
+        'filename',
+        'original_filename',
+        'mime',
+        'size',
+    ];
 
     public function user(): BelongsTo
     {
@@ -60,11 +72,17 @@ class File extends Model
         return $builder->where('user_id', '=', $user->id);
     }
 
-    public function getUrlAttribute(){
+    public function getUrlAttribute() : string
+    {
         return sprintf("%s/%s/%s",
             config('upload.storage.public_url_prefix'),
             config('upload.storage.path'),
             $this->filename
         );
+    }
+
+    public function getDeleteUrlAttribute(): string
+    {
+        return URL::temporarySignedRoute('file.delete', now()->addMinutes(5), ['file' => $this]);
     }
 }

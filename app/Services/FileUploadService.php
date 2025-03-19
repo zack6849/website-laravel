@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Services;
 
@@ -8,15 +9,14 @@ use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Throwable;
 
 class FileUploadService
 {
 
     private Filesystem $disk;
 
-    public function __construct(
-        private CDNService $cdnService
-    )
+    public function __construct()
     {
         $this->disk = Storage::disk(config('upload.storage.disk'));
     }
@@ -42,24 +42,33 @@ class FileUploadService
             'original_filename' => $file->getClientOriginalName(),
             'mime' => $file->getMimeType(),
             'size' => $file->getSize(),
-            'user_id' => auth()->user()->id,
         ]);
-        $file->save();
+        auth()->user()->files()->save($file);
         return $file;
     }
 
+    /**
+     * Deletes a file from the disk, database, and purges it from the CDN
+     * @throws Throwable if the file cannot be deleted
+     */
     public function delete(File $file): bool
     {
         $result = $this->disk->delete($file->file_location);
-        if ($result) {
-            $this->cdnService->purgeCache(
-                config('services.digitalocean.cdn.id'),
-                $file->file_location
-            );
-            $file->delete();
-        }else {
+        if (!$result) {
             throw new Exception("Failed to delete file $file->file_location");
         }
+        $slug = $file->file_location;
+        $file->delete();
+        //try several times to remove the file from the CDN
+        dispatch(function () use ($slug) {
+            retry(5, function () use ($slug) {
+                $service = resolve(CDNService::class);
+                $success = $service->purgeCache(config('services.digitalocean.cdn_endpoint_id'), $slug);
+                if (!$success) {
+                    throw new Exception("Failed to purge CDN cache for file $slug");
+                }
+            }, 1000);
+        })->afterResponse();
         return $result;
     }
 }

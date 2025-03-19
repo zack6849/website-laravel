@@ -24,6 +24,7 @@ import {Map, Popup} from 'maplibre-gl';
 import {isMapboxURL, transformMapboxUrl} from 'maplibregl-mapbox-request-transformer'
 
 export default {
+    name: 'QSOMapComponent',
     props: ['mapboxKey', 'config'],
     data() {
         return {
@@ -136,10 +137,10 @@ export default {
         }
     },
     watch: {
-        currentBand: function (val) {
+        currentBand: function () {
             this.loadQsos();
         },
-        currentMode: function (val) {
+        currentMode: function () {
             this.loadQsos();
         }
     },
