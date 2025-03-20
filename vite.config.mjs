@@ -27,7 +27,6 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/js/app.js',
                 'resources/js/vue.js',
-                'resource/js/libraries.js',
             ],
             refresh: true,
         }),
