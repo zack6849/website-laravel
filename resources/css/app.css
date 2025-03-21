@@ -1,8 +1,6 @@
 @import url('https://fonts.googleapis.com/css?family=Nunito');
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
+@import "tailwindcss";
+@config "../../tailwind.config.js";
 
 #content.container-fluid{
     padding: 0;
@@ -15,7 +13,6 @@
 
 a{
     text-decoration: none;
-    color: #07c;
     cursor: pointer;
 }
 

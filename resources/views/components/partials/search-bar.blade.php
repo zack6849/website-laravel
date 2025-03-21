@@ -4,7 +4,7 @@
             {{ $buttons }}
         </div>
     @endif
-    <input wire:model="search" type="text" class="form-control" name="search"
+    <input wire:model.live="search" type="text" class="form-control" name="search"
            placeholder="{{$placeholder}}" aria-label="{{$placeholder}}"
            aria-describedby="basic-addon2" value="{{ request()->search ?? ""}}">
     <div class="input-group-append">

@@ -2,7 +2,7 @@
     <div class="photo-gallery-container">
         <div class="photo-gallery flex flex-wrap justify-between">
             <template v-for="photo in photos">
-                <photo v-if="photo.width_l >= 1024" v-bind:key="photo.id" v-bind:info="photo"/>
+                <photo-component v-if="photo.width_l >= 1024" v-bind:key="photo.id" v-bind:info="photo"/>
             </template>
         </div>
     </div>
@@ -10,8 +10,13 @@
 
 <script>
 import axios from 'axios';
+import PhotoComponent from "./PhotoComponent.vue";
 
 export default {
+    name: 'PhotoGalleryComponent',
+    components: {
+        PhotoComponent,
+    },
     props: ['api_key', 'user_id'],
     mounted() {
         this.loadPhotos();

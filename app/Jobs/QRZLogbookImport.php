@@ -5,9 +5,9 @@ namespace App\Jobs;
 use App\Models\Callsign;
 use App\Models\LogbookEntry;
 use App\Models\POTAPark;
-use App\Providers\MainheadGridResolutionServiceProvider;
-use App\Providers\ParksOnTheAirServiceProvider;
-use App\Providers\QRZLogbookProvider;
+use App\Services\MainheadGridResolutionService;
+use App\Services\ParksOnTheAirService;
+use App\Services\QRZLogbookService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -20,9 +20,9 @@ class QRZLogbookImport implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    private QRZLogbookProvider $logbookProvider;
-    private ParksOnTheAirServiceProvider $potaProvider;
-    private MainheadGridResolutionServiceProvider $gridProvider;
+    private QRZLogbookService $logbookService;
+    private ParksOnTheAirService $potaService;
+    private MainheadGridResolutionService $gridResolutionService;
 
     /**
      * Create a new job instance.
@@ -39,15 +39,15 @@ class QRZLogbookImport implements ShouldQueue
      * @return void
      */
     public function handle(
-        MainheadGridResolutionServiceProvider $mainheadGridResolutionServiceProvider,
-        QRZLogbookProvider                    $logbookProvider,
-        ParksOnTheAirServiceProvider          $parksOnTheAirServiceProvider
+        MainheadGridResolutionService $gridResolutionService,
+        QRZLogbookService             $logbookProvider,
+        ParksOnTheAirService          $parksOnTheAirServiceProvider
     )
     {
-        $this->logbookProvider = $logbookProvider;
-        $this->potaProvider = $parksOnTheAirServiceProvider;
-        $this->gridProvider = $mainheadGridResolutionServiceProvider;
-        $records = $this->logbookProvider->getLogbookEntries();
+        $this->logbookService = $logbookProvider;
+        $this->potaService = $parksOnTheAirServiceProvider;
+        $this->gridResolutionService = $gridResolutionService;
+        $records = $this->logbookService->getLogbookEntries();
         LogbookEntry::query()->whereNotNull('created_at')->delete();
         foreach ($records as $record) {
             $this->saveRecord($record);
@@ -164,10 +164,10 @@ class QRZLogbookImport implements ShouldQueue
     private function findValidParks(string $comment) : array
     {
         $realParks = [];
-        if (preg_match('/([a-zA-Z]{1,}-\d+)/', $comment, $matches)) {
+        if (preg_match('/([a-zA-Z]+-\d+)/', $comment, $matches)) {
             $references = array_unique($matches);
             foreach ($references as $reference) {
-                $park = $this->potaProvider->getParkInfo($reference);
+                $park = $this->potaService->getParkInfo($reference);
                 if ($park !== false) {
                     $realParks[] = $park;
                 }

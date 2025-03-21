@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -11,7 +12,7 @@ return new class extends Migration
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
         Schema::table('logbook_entries', function (Blueprint $table) {
             $table->foreignId('park_id')->nullable()->references('id')->on('pota_parks');
@@ -24,7 +25,7 @@ return new class extends Migration
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::table('logbook_entries', function (Blueprint $table) {
             $table->dropColumn("park_id");

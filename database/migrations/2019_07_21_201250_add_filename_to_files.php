@@ -12,7 +12,7 @@ class AddFilenameToFiles extends Migration
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
         Schema::table('files', function (Blueprint $table) {
             $table->string("filename")->nullable();
@@ -24,7 +24,7 @@ class AddFilenameToFiles extends Migration
      *
      * @return void
      */
-    public function down()
+    public function down(): void
     {
         Schema::table('file', function (Blueprint $table) {
             $table->removeColumn("filename");

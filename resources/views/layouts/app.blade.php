@@ -32,7 +32,7 @@
     </div>
 </div>
 @livewireScripts
-@stack('scripts')
 @vite('resources/js/app.js')
+@stack('scripts')
 </body>
 </html>

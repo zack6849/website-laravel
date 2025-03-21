@@ -1,48 +1,35 @@
 <?php
 
-namespace App\Providers;
+namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\ServiceProvider;
 use j4nr6n\ADIF\Parser;
 
-class QRZLogbookProvider extends ServiceProvider
+class QRZLogbookService
 {
 
-    private string $baseUrl;
-    private mixed $token;
+    private string $baseUrl = 'https://logbook.qrz.com';
+    private mixed $token = '';
 
-    public function __construct($app)
+    public function __construct()
     {
-        parent::__construct($app);
-        $this->baseUrl = 'https://logbook.qrz.com';
+        $this->baseUrl = '';
         $this->token = config('services.qrz.key');
     }
 
-    /**
-     * Register services.
-     *
-     * @return void
-     */
-    public function register()
+    public function getLogbookEntries()
     {
-        $this->app->singleton(QRZLogbookProvider::class, function ($app) {
-            return new QRZLogbookProvider($app);
-        });
-    }
-
-    public function getLogbookEntries(){
-        if(\Storage::exists('qrzlogbook.txt')){
+        if (\Storage::exists('qrzlogbook.txt')) {
             $adifString = \Storage::get('qrzlogbook.txt');
             return $this->parseLogbookEntries($adifString);
         }
-        $response = Http::asForm()->post('https://logbook.qrz.com/api', [
-            'KEY' => config('services.qrz.key'),
+        $response = Http::asForm()->post($this->baseUrl . '/api', [
+            'KEY' => $this->token,
             'ACTION' => 'FETCH'
         ]);
         \Storage::put('qrzlogbook.txt', $response->body());
         return $this->parseLogbookEntries($response->body());
-
     }
 
     public function parseLogbookEntries($adifString){

@@ -16,11 +16,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        // $this->call(UsersTableSeeder::class);
         $user = new User();
         $user->name = "Zachary Craig";
         $user->password = Hash::make("password");
-        $user->email = "zack@zack6849.com";
+        $user->email = "zack@zcraig.me";
         $user->save();
 
         $this->call(ITURegionSeeder::class);

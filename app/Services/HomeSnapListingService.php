@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Providers;
+namespace App\Services;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\ServiceProvider;
 
-class HomeSnapListingProvider extends ServiceProvider
+class HomeSnapListingService extends ServiceProvider
 {
 
     public $userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:92.0) Gecko/20100101 Firefox/92.0';
@@ -18,8 +18,8 @@ class HomeSnapListingProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->singleton(HomeSnapListingProvider::class, function ($app) {
-            return new HomeSnapListingProvider($app);
+        $this->app->singleton(HomeSnapListingService::class, function ($app) {
+            return new HomeSnapListingService($app);
         });
     }
 
@@ -44,7 +44,7 @@ class HomeSnapListingProvider extends ServiceProvider
         }
         $response_data = json_decode($response->body(), true);
         $listing_id = Arr::get($response_data, 'd.Properties.0.Listing.ID', Arr::get($response_data, 'd.Properties.0.ID', false));
-        if ($listing_id == false) {
+        if ($listing_id === false) {
             throw new \Exception("Failed to extract listing ID from response: {$response->body()}, code: {$response->status()}");
         }
         \Cache::put($key, $listing_id);
@@ -70,7 +70,7 @@ class HomeSnapListingProvider extends ServiceProvider
         $data = json_decode($response->body(), true);
         $listingId = Arr::get($data, 'd.Listing.ID', false);
         //don't cache an invalid response.
-        if ($listingId == false) {
+        if ($listingId === false) {
             throw new \Exception("Failed to get listing ID from data: " . json_encode($data));
         }
         \Cache::set($key, $listingId);

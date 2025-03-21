@@ -3,9 +3,13 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Database\Factories\FileFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\URL;
 
 /**
  * App\File
@@ -34,35 +38,51 @@ use Illuminate\Support\Carbon;
  * @method static Builder|File whereFilename($value)
  * @method static Builder|File whereSize($value)
  * @method static Builder|File forUser($user)
+ * @method static FileFactory factory($count = null, $state = [])
+ * @property-read string $delete_url
+ * @property-read mixed $url
  * @mixin \Eloquent
  */
 class File extends Model
 {
+    use HasFactory;
 
-    protected $guarded = [
-        'id',
-        'user_id',
+    protected $fillable = [
         'file_location',
+        'filename',
+        'original_filename',
+        'mime',
+        'size',
     ];
 
-    public function user(){
+    public function user(): BelongsTo
+    {
         return $this->belongsTo(User::class);
     }
 
-    public function scopeSearch(Builder $builder, $search){
+    public function scopeSearch(Builder $builder, $search): Builder
+    {
         return $builder->where('filename', 'like', "%$search%")
             ->orWhere('original_filename', 'like', "%$search%")
             ->orWhere('mime', 'like', "%$search%");
     }
 
-    /**
-     * Find all files belonging to a user
-     * @see User::files()
-     * @param Builder $builder
-     * @param $user
-     * @return Builder
-     */
-    public function scopeForUser(Builder $builder, $user){
+    public function scopeForUser(Builder $builder, $user): Builder
+    {
         return $builder->where('user_id', '=', $user->id);
+    }
+
+    public function getUrlAttribute() : string
+    {
+        return sprintf("%s/%s/%s",
+            config('upload.storage.public_url_prefix'),
+            config('upload.storage.path'),
+            $this->filename
+        );
+    }
+
+    public function getDeleteUrlAttribute(): string
+    {
+        return URL::temporarySignedRoute('file.delete', now()->addMinutes(5), ['file' => $this]);
     }
 }
