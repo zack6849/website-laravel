@@ -19,14 +19,23 @@ class FileUploadTest extends TestCase
         \Storage::fake(config('upload.storage.disk'));
         $user = User::factory()->create();
         $file = UploadedFile::fake()->image('photo.jpg');
-        $this->actingAs($user, 'api')
-            ->json('PUT', route('file.store'), compact('file'))
-            ->dump()
-            ->assertJson([
+        $response = $this->actingAs($user, 'api')
+            ->json('PUT', route('file.store'), compact('file'));
+        $latestFile = File::latest()->first();
+        $response->assertJson([
+            'data' => [
+                'user' => [
+                    'email' => $user->email,
+                ],
                 'file' => [
                     'original_filename' => $file->getClientOriginalName(),
+                    'filename' => $latestFile->filename,
                 ],
-                'view_url' => route('file.show', ['file' => $file->getClientOriginalName()])
-            ]);
+            ]
+        ]);
+        $expectedUrl = route('file.show', ['file' => $latestFile->filename]);
+        $response->assertJsonFragment(['view_url' => $expectedUrl]);
+        //assert we have a temporarily signed URl in the response
+        $response->assertSeeText("?signature=");
     }
 }
