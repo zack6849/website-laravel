@@ -16,7 +16,7 @@ class UploadedFileResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'file' => $this->toArray($request),
+            'file' => $this->resource->toArray(),
             'view_url' => route('file.show', ['file' => $this->filename]),
             //signed route, so you can't tamper with the deletion URL and change IDs or something.
             'delete_url' => URL::signedRoute('file.delete', $this)

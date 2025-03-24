@@ -16,7 +16,7 @@ class FileUploadTest extends TestCase
     /** @test */
     public function upload()
     {
-        \Storage::fake('app');
+        \Storage::fake(config('upload.storage.disk'));
         $user = User::factory()->create();
         $file = UploadedFile::fake()->image('photo.jpg');
         $this->actingAs($user, 'api')
@@ -28,11 +28,5 @@ class FileUploadTest extends TestCase
                 ],
                 'view_url' => route('file.show', ['file' => $file->getClientOriginalName()])
             ]);
-    }
-
-    /** @test */
-    public function unauthenticatedFileView()
-    {
-        $file = File::factory()->create();
     }
 }
