@@ -1,9 +1,9 @@
-@servers(['production' => 'zack@zack6849.com'])
+@servers(['production' => 'zack@zcraig.me'])
 
 @setup
 $repo = 'https://github.com/zack6849/website-laravel.git';
-$appDir = '/srv/www/zack6849.com';
-$branch = 'master';
+$appDir = '/srv/www/portfolio';
+$branch = 'develop';
 
 date_default_timezone_set('America/New_York');
 $date = date('Y-m-d_H-i-s');
@@ -19,20 +19,22 @@ $fpm_service = 'php8.2-fpm';
 @endsetup
 
 @story('deploy')
-	git
-	install
-	live
-    @if ($use_fpm)
-        restart-fpm
-    @endif
+git
+install
+live
+@if ($use_fpm)
+    restart-fpm
+@endif
 @endstory
 
 @task('git', ['on' => 'production'])
-    echo "Cloning..."
-	git clone -b {{ $branch }} "{{ $repo }}" {{ $deployment }}
+echo "Cloning..."
+git clone -b {{ $branch }} "{{ $repo }}" {{ $deployment }}
 @endtask
 
 @task('install', ['on' => 'production'])
+export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # This loads nvm
 echo "Installing new version"
 cd {{ $deployment }}
 rm -rf {{ $deployment }}/storage
@@ -60,7 +62,7 @@ echo "Deployment complete!"
 @endtask
 
 @task('restart-fpm', ['on' => 'production', 'confirm' => 'Restart PHP-FPM?'])
-    sudo service {{$fpm_service}} restart
+sudo service {{$fpm_service}} restart
 @endtask
 
 
