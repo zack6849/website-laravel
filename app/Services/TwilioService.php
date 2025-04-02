@@ -1,17 +1,61 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\ServiceProvider;
+use Twilio\Exceptions\ConfigurationException;
+use Twilio\Exceptions\TwilioException;
 use Twilio\Rest\Client;
 
 class TwilioService
 {
-    public function lookupNumber($phone_number)
+    /**
+     * Looks up a phone number
+     * @param string $phoneNumber the phone number
+     * @param bool $bustCache if true, ignore cache and fetch latest
+     * @return array|false the response from the lookup or false on failure
+     */
+    public function lookupNumber(string $phoneNumber, bool $bustCache = false): false|array
     {
-        $cache_key = "lookups" . md5($phone_number);
-        if (!Cache::has($cache_key)) {
+        $phoneNumber = $this->normalizePhoneNumber($phoneNumber);
+        if (!$this->hasCachedResponseFor($phoneNumber) || $bustCache) {
+            return $this->lookupPhoneNumber($phoneNumber);
+        }
+        return Cache::get($this->getCacheKey($phoneNumber));
+    }
+
+    /**
+     * Normalizes a phone number, remove anything other than numbers, dashes, and plus signs
+     * @param string $phoneNumber
+     * @return array|string|null
+     */
+    public function normalizePhoneNumber(string $phoneNumber): array|string|null
+    {
+        return $this->e614PhoneNumber(preg_replace('/([^\d\-+])/', '', $phoneNumber));
+    }
+
+    public function e614PhoneNumber(string $phoneNumber): string
+    {
+        if (strlen($phoneNumber) == 10) {
+            return "1$phoneNumber";
+        }
+        return $phoneNumber;
+    }
+
+    public function hasCachedResponseFor($phone_number): bool
+    {
+        return Cache::has($this->getCacheKey($phone_number));
+    }
+
+    /**
+     * @param $phone_number
+     * Looks up the phone number and caches the result
+     */
+    private function lookupPhoneNumber($phone_number): false|array
+    {
+        try {
             $client = new Client(config('twilio.sid'), config('twilio.token'));
             $result = $client->lookups->v1->phoneNumbers($phone_number)->fetch([
                 'type' => ['carrier', 'caller-name'],
@@ -19,13 +63,23 @@ class TwilioService
                     'ekata_reverse_phone',
                 ]
             ]);
-            $response = $result->toArray();
-            Cache::forever($cache_key, $response);
+        } catch (ConfigurationException|TwilioException $e) {
+            return false;
         }
-        return Cache::get($cache_key);
+        $response = $result->toArray();
+        Cache::forever($this->getCacheKey($phone_number), $response);
+        return $response;
     }
 
-    public function extractData($response)
+    private function getCacheKey($phone_number): string
+    {
+        return "lookups" . md5($phone_number);
+    }
+
+    /**
+     * @todo: this is disgusting, fix it
+     */
+    public function extractData($response): array
     {
         $response_data = [
             "possible_owners" => [
@@ -83,7 +137,7 @@ class TwilioService
         return $response_data;
     }
 
-    public function toSms($data)
+    public function toSms($data): string
     {
         $possible_owners = implode(", ", $data['possible_owners']);
         $associated = [];
