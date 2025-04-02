@@ -73,7 +73,7 @@ class TwilioService
 
     private function getCacheKey($phone_number): string
     {
-        return "lookups" . md5($phone_number);
+        return "lookups" . sha1($phone_number);
     }
 
     /**

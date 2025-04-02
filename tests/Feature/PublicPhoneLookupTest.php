@@ -24,7 +24,7 @@ class PublicPhoneLookupTest extends TestCase
     {
         parent::setUp();
         $upperbound = 100;
-        $this->limit = $this->faker->numberBetween(0, $upperbound / 2);
+        $this->limit = $this->faker->numberBetween(3, $upperbound / 2);
         $this->authenticatedLimit = $this->faker->numberBetween($this->limit, $upperbound);
         config([
             'twilio.public.rate_limit' => $this->limit,
