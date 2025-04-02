@@ -11,9 +11,15 @@ use Twilio\TwiML\MessagingResponse;
 class TwilioController extends Controller
 {
 
+
     public function lookup($phone_number, TwilioService $twilio)
     {
         return $twilio->extractData($twilio->lookupNumber($phone_number));
+    }
+
+    public function index()
+    {
+        return view('pages.phone-lookup');
     }
 
     public function rawLookup($phone_number, TwilioService $twilio)

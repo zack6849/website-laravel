@@ -4,15 +4,11 @@ namespace Tests\Feature;
 
 use App\Models\File;
 use App\Models\User;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class FileUploadTest extends TestCase
 {
-
-    use DatabaseTransactions;
-
     /** @test */
     public function upload()
     {
