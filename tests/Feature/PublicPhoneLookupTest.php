@@ -7,7 +7,6 @@ namespace Tests\Feature;
 use App\Livewire\PhoneNumberLookup;
 use App\Models\User;
 use App\Services\TwilioService;
-use Illuminate\Container\Attributes\Database;
 use Illuminate\Foundation\Testing\WithFaker;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
@@ -22,17 +21,13 @@ class PublicPhoneLookupTest extends TestCase
     use WithFaker;
 
     private int $limit = 0;
-    private int $authenticatedLimit = 0;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $upperbound = 100;
-        $this->limit = $this->faker->numberBetween(3, $upperbound / 2);
-        $this->authenticatedLimit = $this->faker->numberBetween($this->limit, $upperbound);
+        $this->limit = $this->faker->numberBetween(3, 5);
         config([
             'twilio.public.rate_limit' => $this->limit,
-            'twilio.authenticated.rate_limit' => $this->authenticatedLimit,
         ]);
     }
 
@@ -61,8 +56,8 @@ class PublicPhoneLookupTest extends TestCase
         $user = User::factory()->create();
         Livewire::actingAs($user)
             ->test(PhoneNumberLookup::class)
-            ->assertSeeText("You have {$this->authenticatedLimit} lookups remaining")
-            ->assertSet('dailyLimit', $this->authenticatedLimit);
+            ->assertSeeText("You have {$user->lookup_limit} lookups remaining")
+            ->assertSet('dailyLimit', $user->lookup_limit);
     }
 
     #[Test]
@@ -84,14 +79,23 @@ class PublicPhoneLookupTest extends TestCase
 
     #[Test]
     #[DataProvider('userTypeDataProvider')]
-    public function respectsRateLimitConfiguration($type, $user = null): void
+    public function respectsRateLimitConfiguration($user): void
     {
         $this->mockTwilioService();
-        config([
-            "twilio.$type.rate_limit" => 1,
-            "twilio.$type.decay_rate" => 9999
-        ]);
-        $user = $user == null ? null : $user();
+
+        $user = $user();
+        if($user == null){
+            config([
+                'twilio.public.rate_limit' => 1,
+                'twilio.public.decay_rate' => 999,
+            ]);
+        }else {
+            $user->update([
+                'lookup_limit' => 1,
+                'lookup_decay_rate' => 999,
+            ]);
+        }
+
         $this->getLivewireInstance(PhoneNumberLookup::class, $user)
             ->assertSet('remainingLookups', 1)
             ->assertSet('rateLimited', false)
@@ -100,7 +104,7 @@ class PublicPhoneLookupTest extends TestCase
             ->assertSet('remainingLookups', 0)
             ->assertSet('rateLimited', true);
         $this->travelTo(
-            now()->addSeconds(config("twilio.$type.decay_rate")),
+            now()->addSeconds(999),
             function () use ($user) {
                 $this->getLivewireInstance(PhoneNumberLookup::class, $user)
                     ->assertSet('remainingLookups', 1)
@@ -115,17 +119,14 @@ class PublicPhoneLookupTest extends TestCase
     public function cachedResponsesDontConsumeRateLimit($type, $user = null): void
     {
         $this->mockTwilioService(true);
-        config([
-            "twilio.$type.rate_limit" => 1,
-            "twilio.$type.decay_rate" => 9999
-        ]);
         $user = $user == null ? null : $user();
+        $limit = $user?->lookup_limit ?? $this->limit;
         $this->getLivewireInstance(PhoneNumberLookup::class, $user)
-            ->assertSet('remainingLookups', 1)
+            ->assertSet('remainingLookups', $limit)
             ->assertSet('rateLimited', false)
             ->set('phoneNumber', $this->faker->phoneNumber)
             ->call('lookup')
-            ->assertSet('remainingLookups', 1)
+            ->assertSet('remainingLookups', $limit)
             ->assertSet('rateLimited', false);
     }
 
@@ -149,11 +150,10 @@ class PublicPhoneLookupTest extends TestCase
         return [
 
             "authenticated user" => [
-                'type' => 'authenticated',
                 'user' => fn() => User::factory()->create(),
             ],
             'unauthenticated user' => [
-                'type' => 'public',
+                'user' => fn() => null,
             ],
         ];
     }
