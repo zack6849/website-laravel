@@ -35,15 +35,15 @@ class PhoneNumberLookup extends Component
 
     private function getRateLimitConfiguration(): array
     {
-        $type = 'public';
+        $limit = config('twilio.public.rate_limit', 1);
+        $decayRate = config("twilio.public.decay_rate", 86400);
         $key = request()->ip();
-        if (request()->user() !== null) {
-            $type = 'authenticated';
-            $key = request()->user()->id;
+        $user = request()->user();
+        if ($user !== null) {
+            $key = $user->id;
+            $limit = $user->lookup_limit;
+            $decayRate = $user->lookup_decay_rate;
         }
-
-        $limit = config("twilio.$type.rate_limit", 1);
-        $decayRate = config("twilio.$type.decay_rate", 86400);
         return [$key, $limit, $decayRate];
     }
 

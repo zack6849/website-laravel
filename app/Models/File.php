@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Models;
@@ -14,9 +15,6 @@ use Illuminate\Support\Facades\URL;
 /**
  * App\File
  *
- * @method static Builder|File newModelQuery()
- * @method static Builder|File newQuery()
- * @method static Builder|File query()
  * @property int $id
  * @property int $user_id
  * @property string $file_location
@@ -24,23 +22,26 @@ use Illuminate\Support\Facades\URL;
  * @property string $mime
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @method static Builder|File whereCreatedAt($value)
- * @method static Builder|File whereFileLocation($value)
- * @method static Builder|File whereId($value)
- * @method static Builder|File whereMime($value)
- * @method static Builder|File whereOriginalFilename($value)
- * @method static Builder|File whereUpdatedAt($value)
- * @method static Builder|File whereUserId($value)
- * @property string $filename
+ * @property string|null $filename
  * @property int $size
- * @property-read User $user
- * @method static Builder|File search($search)
- * @method static Builder|File whereFilename($value)
- * @method static Builder|File whereSize($value)
- * @method static Builder|File forUser($user)
- * @method static FileFactory factory($count = null, $state = [])
  * @property-read string $delete_url
- * @property-read mixed $url
+ * @property-read string $url
+ * @property-read User $user
+ * @method static FileFactory factory($count = null, $state = [])
+ * @method static Builder<static>|File forUser($user)
+ * @method static Builder<static>|File newModelQuery()
+ * @method static Builder<static>|File newQuery()
+ * @method static Builder<static>|File query()
+ * @method static Builder<static>|File search($search)
+ * @method static Builder<static>|File whereCreatedAt($value)
+ * @method static Builder<static>|File whereFileLocation($value)
+ * @method static Builder<static>|File whereFilename($value)
+ * @method static Builder<static>|File whereId($value)
+ * @method static Builder<static>|File whereMime($value)
+ * @method static Builder<static>|File whereOriginalFilename($value)
+ * @method static Builder<static>|File whereSize($value)
+ * @method static Builder<static>|File whereUpdatedAt($value)
+ * @method static Builder<static>|File whereUserId($value)
  * @mixin \Eloquent
  */
 class File extends Model

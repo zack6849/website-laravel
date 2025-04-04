@@ -64,7 +64,10 @@ class FileController extends Controller
      */
     public function store(UploadFileRequest $request)
     {
-        $file = $this->uploadService->storeUploadedFile($request->file('file'));
+        $file = $this->uploadService->storeUploadedFile(
+            $request->file('file'),
+            $request->user()
+        );
         if ($request->expectsJson()) {
             return new UploadedFileResource($file);
         }

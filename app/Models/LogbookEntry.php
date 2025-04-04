@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Database\Factories\LogbookEntryFactory;
@@ -32,36 +34,36 @@ use Illuminate\Support\Carbon;
  * @property string|null $comments
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read \App\Models\Callsign $callee
- * @property-read \App\Models\Callsign $station
- * @method static LogbookEntryFactory factory($count = null, $state = [])
- * @method static Builder|LogbookEntry newModelQuery()
- * @method static Builder|LogbookEntry newQuery()
- * @method static Builder|LogbookEntry query()
- * @method static Builder|LogbookEntry whereBand($value)
- * @method static Builder|LogbookEntry whereComments($value)
- * @method static Builder|LogbookEntry whereCreatedAt($value)
- * @method static Builder|LogbookEntry whereDistance($value)
- * @method static Builder|LogbookEntry whereFrequency($value)
- * @method static Builder|LogbookEntry whereFromCallsign($value)
- * @method static Builder|LogbookEntry whereFromCoordinates($value)
- * @method static Builder|LogbookEntry whereFromGrid($value)
- * @method static Builder|LogbookEntry whereFromLatitude($value)
- * @method static Builder|LogbookEntry whereFromLongitude($value)
- * @method static Builder|LogbookEntry whereId($value)
- * @method static Builder|LogbookEntry whereMode($value)
- * @method static Builder|LogbookEntry whereRstReceived($value)
- * @method static Builder|LogbookEntry whereRstSent($value)
- * @method static Builder|LogbookEntry whereToCallsign($value)
- * @method static Builder|LogbookEntry whereToCoordinates($value)
- * @method static Builder|LogbookEntry whereToGrid($value)
- * @method static Builder|LogbookEntry whereToLatitude($value)
- * @method static Builder|LogbookEntry whereToLongitude($value)
- * @method static Builder|LogbookEntry whereUpdatedAt($value)
  * @property int|null $park_id
  * @property string $category
- * @method static Builder|LogbookEntry whereCategory($value)
- * @method static Builder|LogbookEntry whereParkId($value)
+ * @property-read Callsign $callee
+ * @property-read Callsign $station
+ * @method static LogbookEntryFactory factory($count = null, $state = [])
+ * @method static Builder<static>|LogbookEntry newModelQuery()
+ * @method static Builder<static>|LogbookEntry newQuery()
+ * @method static Builder<static>|LogbookEntry query()
+ * @method static Builder<static>|LogbookEntry whereBand($value)
+ * @method static Builder<static>|LogbookEntry whereCategory($value)
+ * @method static Builder<static>|LogbookEntry whereComments($value)
+ * @method static Builder<static>|LogbookEntry whereCreatedAt($value)
+ * @method static Builder<static>|LogbookEntry whereDistance($value)
+ * @method static Builder<static>|LogbookEntry whereFrequency($value)
+ * @method static Builder<static>|LogbookEntry whereFromCallsign($value)
+ * @method static Builder<static>|LogbookEntry whereFromCoordinates($value)
+ * @method static Builder<static>|LogbookEntry whereFromGrid($value)
+ * @method static Builder<static>|LogbookEntry whereFromLatitude($value)
+ * @method static Builder<static>|LogbookEntry whereFromLongitude($value)
+ * @method static Builder<static>|LogbookEntry whereId($value)
+ * @method static Builder<static>|LogbookEntry whereMode($value)
+ * @method static Builder<static>|LogbookEntry whereParkId($value)
+ * @method static Builder<static>|LogbookEntry whereRstReceived($value)
+ * @method static Builder<static>|LogbookEntry whereRstSent($value)
+ * @method static Builder<static>|LogbookEntry whereToCallsign($value)
+ * @method static Builder<static>|LogbookEntry whereToCoordinates($value)
+ * @method static Builder<static>|LogbookEntry whereToGrid($value)
+ * @method static Builder<static>|LogbookEntry whereToLatitude($value)
+ * @method static Builder<static>|LogbookEntry whereToLongitude($value)
+ * @method static Builder<static>|LogbookEntry whereUpdatedAt($value)
  * @mixin \Eloquent
  */
 class LogbookEntry extends Model

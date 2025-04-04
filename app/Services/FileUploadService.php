@@ -3,25 +3,28 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Exceptions\FileCannotBeDeletedException;
+use App\Jobs\PurgeCDNCacheJob;
 use App\Models\File;
-use Exception;
+use App\Models\User;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Throwable;
 
 class FileUploadService
 {
 
     private Filesystem $disk;
 
-    public function __construct()
+    public function __construct(
+        public CDNService $cdnService
+    )
     {
         $this->disk = Storage::disk(config('upload.storage.disk'));
     }
 
-    private function getFilename(UploadedFile $file): string
+    public function getFilename(UploadedFile $file): string
     {
         return implode('_', [
                 Str::orderedUuid(),
@@ -29,7 +32,7 @@ class FileUploadService
             ]) . "." . $file->getClientOriginalExtension();
     }
 
-    public function storeUploadedFile(UploadedFile $file): File
+    public function storeUploadedFile(UploadedFile $file, User $user): File
     {
         $storagePath = config('upload.storage.path');
         $name = $this->getFilename($file);
@@ -43,32 +46,24 @@ class FileUploadService
             'mime' => $file->getMimeType(),
             'size' => $file->getSize(),
         ]);
-        auth()->user()->files()->save($file);
+        $user->files()->save($file);
         return $file;
     }
 
     /**
      * Deletes a file from the disk, database, and purges it from the CDN
-     * @throws Throwable if the file cannot be deleted
+     * @throws FileCannotBeDeletedException
      */
     public function delete(File $file): bool
     {
         $result = $this->disk->delete($file->file_location);
         if (!$result) {
-            throw new Exception("Failed to delete file $file->file_location");
+            throw new FileCannotBeDeletedException("Failed to delete the file from disk");
         }
+        //this bit of code is called
         $slug = $file->file_location;
         $file->delete();
-        //try several times to remove the file from the CDN
-        dispatch(function () use ($slug) {
-            retry(5, function () use ($slug) {
-                $service = resolve(CDNService::class);
-                $success = $service->purgeCache(config('services.digitalocean.cdn_endpoint_id'), $slug);
-                if (!$success) {
-                    throw new Exception("Failed to purge CDN cache for file $slug");
-                }
-            }, 1000);
-        })->afterResponse();
+        dispatch(new PurgeCDNCacheJob($slug));
         return $result;
     }
 }
