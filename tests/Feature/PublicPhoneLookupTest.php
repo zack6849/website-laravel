@@ -7,9 +7,13 @@ namespace Tests\Feature;
 use App\Livewire\PhoneNumberLookup;
 use App\Models\User;
 use App\Services\TwilioService;
+use Illuminate\Container\Attributes\Database;
 use Illuminate\Foundation\Testing\WithFaker;
+use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class PublicPhoneLookupTest extends TestCase
@@ -48,7 +52,7 @@ class PublicPhoneLookupTest extends TestCase
         });
     }
 
-    /** @test */
+    #[Test]
     public function showsLimit(): void
     {
         Livewire::test(PhoneNumberLookup::class)
@@ -61,9 +65,7 @@ class PublicPhoneLookupTest extends TestCase
             ->assertSet('dailyLimit', $this->authenticatedLimit);
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function showsAvailable(): void
     {
         Livewire::test(PhoneNumberLookup::class)
@@ -80,10 +82,8 @@ class PublicPhoneLookupTest extends TestCase
             ->assertSeeText("You have {$remaining} lookups remaining");
     }
 
-    /**
-     * @test
-     * @dataProvider userTypeDataProvider
-     */
+    #[Test]
+    #[DataProvider('userTypeDataProvider')]
     public function respectsRateLimitConfiguration($type, $user = null): void
     {
         $this->mockTwilioService();
@@ -110,10 +110,8 @@ class PublicPhoneLookupTest extends TestCase
         );
     }
 
-    /**
-     * @test
-     * @dataProvider userTypeDataProvider
-     */
+    #[Test]
+    #[DataProvider('userTypeDataProvider')]
     public function cachedResponsesDontConsumeRateLimit($type, $user = null): void
     {
         $this->mockTwilioService(true);
@@ -131,7 +129,13 @@ class PublicPhoneLookupTest extends TestCase
             ->assertSet('rateLimited', false);
     }
 
-    private function getLivewireInstance(string $class, User $user = null, string $driver = null)
+    /**
+     * @param string $class the name of the class, eg LiveWireComponent::class
+     * @param User|null $user the user to act as
+     * @param string|null $driver what driver to use when setting the authenticated user
+     * @return Testable
+     */
+    private function getLivewireInstance(string $class, User $user = null, string $driver = null): Testable
     {
         if ($user !== null) {
             return Livewire::actingAs($user, $driver)

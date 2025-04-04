@@ -5,11 +5,12 @@ namespace Tests\Feature;
 use App\Models\File;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class FileUploadTest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function upload()
     {
         \Storage::fake(config('upload.storage.disk'));

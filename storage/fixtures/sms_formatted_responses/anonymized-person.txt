@@ -1,0 +1,11 @@
+Likely Owner: 
+ - John G Doe, Person, M, Between Unknown and Unknown years old
+Likely Addresses: 
+ - 123 Main St Sample City NY 
+Other Associated Names:
+ - Jane A Doe (Possible Relation: PotentialOwner)
+ - Michael B Smith
+ - Emily C Johnson
+ - David D Brown
+ - Sarah E Williams
+ - Chris F Jones

@@ -5,12 +5,18 @@ declare(strict_types=1);
 namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
-use Twilio\Exceptions\ConfigurationException;
 use Twilio\Exceptions\TwilioException;
 use Twilio\Rest\Client;
 
 class TwilioService
 {
+
+    public function __construct(
+        private Client $twilioClient,
+    )
+    {
+    }
+
     /**
      * Looks up a phone number
      * @param string $phoneNumber the phone number
@@ -20,10 +26,13 @@ class TwilioService
     public function lookupNumber(string $phoneNumber, bool $bustCache = false): false|array
     {
         $phoneNumber = $this->normalizePhoneNumber($phoneNumber);
+        $key = $this->getCacheKey($phoneNumber);
         if (!$this->hasCachedResponseFor($phoneNumber) || $bustCache) {
-            return $this->lookupPhoneNumber($phoneNumber);
+            $data = $this->getTwilioInformationForPhoneNumber($phoneNumber);
+            Cache::forever($key, $data);
+            return $data;
         }
-        return Cache::get($this->getCacheKey($phoneNumber));
+        return Cache::get($key);
     }
 
     /**
@@ -33,10 +42,16 @@ class TwilioService
      */
     public function normalizePhoneNumber(string $phoneNumber): array|string|null
     {
-        return $this->e614PhoneNumber(preg_replace('/([^\d\-+])/', '', $phoneNumber));
+        return $this->e164Format(preg_replace('/(\D)/', '', $phoneNumber));
     }
 
-    public function e614PhoneNumber(string $phoneNumber): string
+    /**
+     * Formats the given number to e614
+     * This really just takes a 10-digit number and adds a 1 to the front for US numbers
+     * @param string $phoneNumber
+     * @return string
+     */
+    public function e164Format(string $phoneNumber): string
     {
         if (strlen($phoneNumber) == 10) {
             return "1$phoneNumber";
@@ -44,36 +59,42 @@ class TwilioService
         return $phoneNumber;
     }
 
-    public function hasCachedResponseFor($phone_number): bool
+    /**
+     * Determine if we have a cached copy of the response for the given phone number
+     * @param string $phoneNumber the number to look up, in e164 format
+     * @return bool true if we have a cached response, false otherwise
+     */
+    public function hasCachedResponseFor(string $phoneNumber): bool
     {
-        return Cache::has($this->getCacheKey($phone_number));
+        return Cache::has($this->getCacheKey($phoneNumber));
     }
 
     /**
-     * @param $phone_number
-     * Looks up the phone number and caches the result
+     * Does a lookup on the phone number using Twilio
+     * @param string $phoneNumber the number to look up, in e164 format
+     * @return array the response from Twilio
+     * @throws TwilioException
      */
-    private function lookupPhoneNumber($phone_number): false|array
+    public function getTwilioInformationForPhoneNumber(string $phoneNumber): array
     {
-        try {
-            $client = new Client(config('twilio.sid'), config('twilio.token'));
-            $result = $client->lookups->v1->phoneNumbers($phone_number)->fetch([
-                'type' => ['carrier', 'caller-name'],
-                'addOns' => [
-                    'ekata_reverse_phone',
-                ]
-            ]);
-        } catch (ConfigurationException|TwilioException $e) {
-            return false;
-        }
-        $response = $result->toArray();
-        Cache::forever($this->getCacheKey($phone_number), $response);
-        return $response;
+        $result = $this->twilioClient->lookups->v1->phoneNumbers($phoneNumber)->fetch([
+            'type' => ['carrier', 'caller-name'],
+            'addOns' => [
+                'ekata_reverse_phone',
+            ]
+        ]);
+        return $result->toArray();
     }
 
-    private function getCacheKey($phone_number): string
+    /**
+     * Generates a cache key for the given phone number
+     * (this is a SHA1 hash of the phone number)
+     * @param string $phoneNumber the phone number to hash
+     * @return string the cache key
+     */
+    public function getCacheKey(string $phoneNumber): string
     {
-        return "lookups" . sha1($phone_number);
+        return "twilio.lookups." . sha1($phoneNumber);
     }
 
     /**
