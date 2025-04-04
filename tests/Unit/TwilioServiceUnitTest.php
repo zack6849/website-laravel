@@ -140,7 +140,7 @@ class TwilioServiceUnitTest extends TestCase
     {
         $extracted = $this->service->extractData($data);
         $sms = $this->service->toSms($extracted);
-        $this->assertEquals($sms, $response);
+        $this->assertEquals($response, $sms);
     }
 
     public static function getSMSFixture(string $name, string $path): array
