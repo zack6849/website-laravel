@@ -1,0 +1,83 @@
+{
+    "callerName": {
+        "caller_name": null,
+        "caller_type": "UNDETERMINED",
+        "error_code": null
+    },
+    "countryCode": "US",
+    "phoneNumber": "+12024567041",
+    "nationalFormat": "(202) 456-7041",
+    "carrier": {
+        "error_code": null,
+        "mobile_country_code": "310",
+        "mobile_network_code": null,
+        "name": "Verizon",
+        "type": "landline"
+    },
+    "addOns": {
+        "code": null,
+        "message": null,
+        "results": {
+            "ekata_reverse_phone": {
+                "code": null,
+                "message": null,
+                "request_sid": "XRbcbee9f2d312e74618fc058666a74c02",
+                "result": {
+                    "alternate_phones": [],
+                    "associated_people": [],
+                    "belongs_to": {
+                        "age_range": null,
+                        "alternate_names": [],
+                        "firstname": null,
+                        "gender": null,
+                        "id": "Business.cab4ed94-5fbe-30fe-8255-5b7fde7cb1b7",
+                        "industry": [
+                            "Landmarks and Outdoors",
+                            "Monument"
+                        ],
+                        "lastname": null,
+                        "link_to_phone_start_date": "2014-02-04",
+                        "middlename": null,
+                        "name": "White House Associates",
+                        "type": "Business"
+                    },
+                    "carrier": "Verizon",
+                    "country_calling_code": "1",
+                    "current_addresses": [
+                        {
+                            "city": "Washington Zone 1",
+                            "country_code": null,
+                            "delivery_point": "PartialAddress",
+                            "id": "Location.21e8ba0d-c733-4572-bcb4-17ea13c8b5cc",
+                            "is_active": false,
+                            "lat_long": {
+                                "accuracy": "PostalCode",
+                                "latitude": 38.8999,
+                                "longitude": -77.0316
+                            },
+                            "link_to_person_start_date": null,
+                            "location_type": "PostalCode",
+                            "postal_code": "20001",
+                            "state_code": "DC",
+                            "street_line_1": null,
+                            "street_line_2": null,
+                            "zip4": null
+                        }
+                    ],
+                    "error": null,
+                    "historical_addresses": [],
+                    "id": "Phone.91e00aff-e585-4759-a70a-8199d61b6685",
+                    "is_commercial": true,
+                    "is_prepaid": false,
+                    "is_valid": true,
+                    "line_type": "Landline",
+                    "phone_number": "+12024567041",
+                    "warnings": []
+                },
+                "status": "successful"
+            }
+        },
+        "status": "successful"
+    },
+    "url": "https:\/\/lookups.twilio.com\/v1\/PhoneNumbers\/+12024567041"
+}
