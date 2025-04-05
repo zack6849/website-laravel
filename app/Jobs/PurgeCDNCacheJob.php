@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Jobs;
 
 use App\Exceptions\CachePurgeFailureException;
@@ -11,7 +13,12 @@ class PurgeCDNCacheJob implements ShouldQueue
 {
     use Queueable;
 
-    public int $tries = 5;
+    public int $backoff = 5;
+
+    public function retryUntil(): \DateTime
+    {
+        return now()->addMinutes(10);
+    }
 
     /**
      * Create a new job instance.
@@ -33,13 +40,5 @@ class PurgeCDNCacheJob implements ShouldQueue
         if(!$success){
             $this->fail(new CachePurgeFailureException("Failed to purge CDN cache for path {$this->path}"));
         }
-    }
-
-    /**
-     * Determine the time to wait before retrying the job.
-     */
-    public function backoff(): array
-    {
-        return [1, 2, 4, 8, 16]; // Exponential backoff times in seconds
     }
 }

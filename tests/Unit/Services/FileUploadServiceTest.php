@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit;
+namespace Services;
 
 use App\Exceptions\FileCannotBeDeletedException;
 use App\Jobs\PurgeCDNCacheJob;
 use App\Models\File;
 use App\Models\User;
 use App\Services\FileUploadService;
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\Test;
-use Illuminate\Contracts\Filesystem\Filesystem;
 use Tests\TestCase;
 use Tests\Traits\ServiceTest;
 
