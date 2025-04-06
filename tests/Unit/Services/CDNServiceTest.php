@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Services;
+namespace Tests\Unit\Services;
 
 use App\Services\CDNService;
 use Illuminate\Http\Client\Request;

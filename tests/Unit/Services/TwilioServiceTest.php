@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Services;
+namespace Tests\Unit\Services;
 
 use App\Services\TwilioService;
 use Illuminate\Foundation\Testing\WithFaker;
