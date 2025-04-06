@@ -31,10 +31,13 @@ class CDNServiceTest extends TestCase
         Http::fake();
         $endpointId = Str::uuid()->toString();
         $apiKey = Str::random(32);
-        config(['services.digitalocean.key' => $apiKey]);
+        config([
+            'services.digitalocean.key' => $apiKey,
+            'services.digitalocean.cdn.id' => $endpointId,
+        ]);
         //reload service so it picks up the new config
         $this->reloadService();
-        $this->service->purgeCache($endpointId, '/test/path');
+        $this->service->purgeCache('/test/path');
         Http::assertSent(function(Request $request) use ($apiKey, $endpointId){
             $expectedUrl = self::BASE_URL . 'v2/cdn/endpoints/' . $endpointId . '/cache';
             return $request->url() == $expectedUrl &&

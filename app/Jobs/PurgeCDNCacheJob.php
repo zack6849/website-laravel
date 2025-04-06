@@ -23,7 +23,7 @@ class PurgeCDNCacheJob implements ShouldQueue
     /**
      * Create a new job instance.
      */
-    public function __construct(public string $path)
+    public function __construct(public string $path, public ?string $endpointId = null)
     {
         //
     }
@@ -33,11 +33,12 @@ class PurgeCDNCacheJob implements ShouldQueue
      */
     public function handle(CDNService $service): void
     {
+        $endpointId = $this->endpointId ?? config('services.digitalocean.cdn.id');
         $success = $service->purgeCache(
-            config('services.digitalocean.cdn.id'),
-            $this->path
+            $this->path,
+            $endpointId,
         );
-        if(!$success){
+        if (!$success) {
             $this->fail(new CachePurgeFailureException("Failed to purge CDN cache for path {$this->path}"));
         }
     }

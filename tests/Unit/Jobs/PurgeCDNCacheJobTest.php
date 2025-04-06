@@ -31,7 +31,7 @@ class PurgeCDNCacheJobTest extends TestCase
         config(['services.digitalocean.cdn.id' => $endpoint]);
         $this->mock(CDNService::class, function (MockInterface $mock) use ($endpoint, $path) {
             $mock->shouldReceive('purgeCache')
-                ->withArgs([$endpoint, $path])
+                ->withArgs([$path, $endpoint])
                 ->once();
         });
         PurgeCDNCacheJob::dispatchSync($path);
