@@ -9,7 +9,7 @@
         "@mdi/font": "^7.4.47",
         "axios": "^1.8.2",
         "laravel-vite-plugin": "^1.2.0",
-        "lodash": "^4.17.21",
+        "lodash": "^4.17.23",
         "postcss": "^8.4.21",
         "sass": "^1.59.3",
         "tailwindcss": "^4.0.14",
