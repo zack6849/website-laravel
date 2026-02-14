@@ -15,11 +15,12 @@ use Livewire\Component;
 class PhoneNumberLookup extends Component
 {
 
-    public string $phoneNumber;
+    public string $phoneNumber = '';
     public ?array $formattedResult = null;
     public ?array $result = null;
     public ?string $resultSummary = null;
     public string $rateLimitMessage = '';
+    public string $errorMessage = '';
     #[Locked]
     public bool $rateLimited = false;
     #[Locked]
@@ -35,14 +36,14 @@ class PhoneNumberLookup extends Component
 
     private function getRateLimitConfiguration(): array
     {
-        $limit = config('twilio.public.rate_limit', 1);
-        $decayRate = config("twilio.public.decay_rate", 86400);
+        $limit = config('twilio.public_rate_limit', 3);
+        $decayRate = config('twilio.public_decay_rate', 86400);
         $key = request()->ip();
         $user = request()->user();
         if ($user !== null) {
             $key = $user->id;
-            $limit = $user->lookup_limit;
-            $decayRate = $user->lookup_decay_rate;
+            $limit = $user->lookup_limit ?? $limit;
+            $decayRate = $user->lookup_decay_rate ?? $decayRate;
         }
         return [$key, $limit, $decayRate];
     }
