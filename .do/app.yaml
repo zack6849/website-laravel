@@ -1,0 +1,78 @@
+name: website-laravel
+region: nyc
+
+services:
+  - name: web
+    github:
+      repo: zack6849/website-laravel
+      branch: master
+      deploy_on_push: true
+    dockerfile_path: .docker/Dockerfile
+    http_port: 8080
+    instance_count: 1
+    instance_size_slug: apps-s-1vcpu-2gb
+    health_check:
+      http_path: /
+    envs:
+      - key: APP_ENV
+        value: production
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: QUEUE_CONNECTION
+        value: redis
+
+workers:
+  - name: queue-worker
+    github:
+      repo: zack6849/website-laravel
+      branch: master
+      deploy_on_push: true
+    dockerfile_path: .docker/Dockerfile
+    instance_count: 1
+    instance_size_slug: apps-s-1vcpu-0.5gb
+    run_command: php artisan queue:work redis --sleep=3 --tries=3 --timeout=90 --max-jobs=500 --max-time=3600
+    envs:
+      - key: APP_ENV
+        value: production
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: QUEUE_CONNECTION
+        value: redis
+
+jobs:
+  - name: migrate
+    github:
+      repo: zack6849/website-laravel
+      branch: master
+    dockerfile_path: .docker/Dockerfile
+    kind: PRE_DEPLOY
+    instance_size_slug: apps-s-1vcpu-0.5gb
+    run_command: php artisan migrate --force
+    envs:
+      - key: APP_ENV
+        value: production
+
+  - name: scheduler
+    github:
+      repo: zack6849/website-laravel
+      branch: master
+    dockerfile_path: .docker/Dockerfile
+    kind: SCHEDULED
+    schedule:
+      cron: "* * * * *"
+      time_zone: America/New_York
+    instance_size_slug: apps-s-1vcpu-0.5gb
+    run_command: php artisan schedule:run
+    envs:
+      - key: APP_ENV
+        value: production
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: QUEUE_CONNECTION
+        value: redis
+
+databases:
+  - name: redis
+    engine: REDIS
+    production: true
+    version: "7"
