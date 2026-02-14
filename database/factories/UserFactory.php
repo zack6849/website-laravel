@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Database\Factories;
@@ -22,7 +23,7 @@ class UserFactory extends Factory
 {
     protected $model = User::class;
 
-    public function definition()
+    public function definition(): array
     {
         return [
             'name' => $this->faker->name,
@@ -30,6 +31,17 @@ class UserFactory extends Factory
             'email_verified_at' => now(),
             'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
             'remember_token' => Str::random(10),
+            'lookup_limit' => 30,
+            'lookup_decay_rate' => 86400,
         ];
+    }
+
+    public function administrator(): UserFactory
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'is_admin' => 'horizon_access',
+            ];
+        });
     }
 }

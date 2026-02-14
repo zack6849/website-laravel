@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
+use App\Exceptions\InvalidCDNCacheConfigurationException;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 
 class CDNService
@@ -9,16 +13,29 @@ class CDNService
     private const BASE_URL = 'https://api.digitalocean.com/';
     private $client;
 
-    public function __construct()
+    public function __construct(?string $token = null)
     {
+        if ($token == null) {
+            $token = config('services.digitalocean.key');
+        }
         $this->client = Http::baseUrl(static::BASE_URL)->withHeaders([
-            'Authorization' => 'Bearer ' . config('services.digitalocean.key'),
+            'Authorization' => "Bearer $token",
             'Accept' => 'application/json',
         ]);
     }
 
-    public function purgeCache(string $endpointId, string $path): bool
+    /**
+     * @throws InvalidCDNCacheConfigurationException
+     * @throws ConnectionException
+     */
+    public function purgeCache(string $path, ?string $endpointId = null): bool
     {
+        if ($endpointId == null) {
+            $endpointId = config('services.digitalocean.cdn.id');
+            if($endpointId == null){
+                throw new InvalidCDNCacheConfigurationException("CDN endpoint ID is not configured");
+            }
+        }
         return $this->client->delete("/v2/cdn/endpoints/$endpointId/cache", [
             'files' => [$path]
         ])->successful();

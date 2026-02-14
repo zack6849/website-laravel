@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Database\Factories\ITURegionFactory;
@@ -17,14 +19,14 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @method static ITURegionFactory factory($count = null, $state = [])
- * @method static Builder|ITURegion newModelQuery()
- * @method static Builder|ITURegion newQuery()
- * @method static Builder|ITURegion query()
- * @method static Builder|ITURegion whereCreatedAt($value)
- * @method static Builder|ITURegion whereDescription($value)
- * @method static Builder|ITURegion whereId($value)
- * @method static Builder|ITURegion whereName($value)
- * @method static Builder|ITURegion whereUpdatedAt($value)
+ * @method static Builder<static>|ITURegion newModelQuery()
+ * @method static Builder<static>|ITURegion newQuery()
+ * @method static Builder<static>|ITURegion query()
+ * @method static Builder<static>|ITURegion whereCreatedAt($value)
+ * @method static Builder<static>|ITURegion whereDescription($value)
+ * @method static Builder<static>|ITURegion whereId($value)
+ * @method static Builder<static>|ITURegion whereName($value)
+ * @method static Builder<static>|ITURegion whereUpdatedAt($value)
  * @mixin \Eloquent
  */
 class ITURegion extends Model

@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Tests\Unit\Services;
+
 use App\Services\TwilioService;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Cache;
@@ -13,7 +15,7 @@ use Tests\Traits\InteractsWithFixtures;
 use Twilio\Http\Response;
 use Twilio\Rest\Client;
 
-class TwilioServiceUnitTest extends TestCase
+class TwilioServiceTest extends TestCase
 {
 
     use WithFaker;
