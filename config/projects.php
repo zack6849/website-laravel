@@ -1,0 +1,110 @@
+<?php
+
+return [
+    'categories' => [
+        'personal' => [
+            [
+                'name' => 'This Portfolio Site',
+                'description' => 'The site you\'re on now. Hosts some tools I find useful or interesting',
+                'tech' => ['Laravel', 'Livewire', 'VueJS', 'Twilio API', 'QRZ API'],
+                'status' => 'Live',
+                'note' => 'You\'re here!',
+                'glow' => true,
+                'featured' => true,
+                'links' => [
+                    ['url' => '/radio', 'label' => 'View the radio map', 'icon' => 'fas fa-location-dot'],
+                    ['url' => '/lookup', 'label' => 'Try the phone lookup', 'icon' => 'fas fa-mobile-screen'],
+                    ['url' => 'https://github.com/zack6849/website-laravel', 'label' => 'View source on GitHub', 'icon' => 'fab fa-github'],
+                ],
+            ],
+                [
+                    'name' => 'Channel Points Prize Wheel',
+                    'description' => 'A Laravel + Livewire app that lets a streamer\'s viewers redeem prize-wheel spins with channel points instead of bits. Includes a Twitch-OAuth admin panel for configuring wheel items, odds, sounds, and timed effects with on-stream countdown overlays, all synced live over WebSockets.',
+                    'tech' => ['Laravel', 'Livewire', 'Reverb', 'WebSockets', 'Twitch API'],
+                    'note' => 'Built for a friend',
+                    'links' => [],
+                ],
+                [
+                    'name' => 'Marketplace Purchase Automation',
+                    'description' => 'A local docker-based PHP tool that drives a Playwright-controlled browser session to automate purchasing items on a third party marketplace.',
+                    'tech' => ['Playwright', 'Laravel', 'Docker'],
+                    'status' => 'Private',
+                    'links' => [],
+                ],
+                [
+                    'name' => 'Personal Blog & File-Sharing Platform',
+                    'description' => 'An earlier personal blog/portfolio built with Symfony, including a private file-upload service. Ended up preferring Laravel\'s ecosystem for future projects.',
+                    'tech' => ['Symfony'],
+                    'status' => 'Retired',
+                    'links' => [],
+                ],
+                [
+                    'name' => 'Original Portfolio Site',
+                    'description' => 'An earlier version of this same portfolio, built with Java, Spring, and Tomcat.',
+                    'tech' => ['Java', 'Spring', 'Apache Tomcat'],
+                    'status' => 'Retired',
+                    'links' => [],
+                ],
+            ],
+        'professional' => [
+            [
+                'name' => 'Healthcare Staffing Marketplace Platform',
+                'description' => 'Backend-focused work across the main Laravel monolith and REST API powering a healthcare staffing marketplace\'s web and mobile clients.',
+                'tech' => ['Laravel', 'PHP', 'AWS', 'Kubernetes', 'VueJS'],
+                'industry' => 'Professional: Healthcare Staffing',
+                'featured' => true,
+                'links' => [],
+            ],
+            [
+                'name' => 'Legacy Billing System Modernization',
+                'description' => 'Sole engineer responsible for a business-critical PHP billing system that generated resident bills across several property management integrations. Modernized the codebase from PHP 5.6 to 7.2, improved observability, and shipped new features while keeping the system in continuous production use.',
+                'tech' => ['PHP', 'REST APIs', 'SOAP APIs'],
+                'industry' => 'Professional: Utility Submetering',
+                'featured' => true,
+                'links' => [],
+            ],
+            [
+                'name' => 'Mobile API Microservice',
+                'description' => 'A NestJS microservice integrated with Apache Kafka, exposing a REST API consumed by a companion mobile app. Hands-on experience with event-driven architecture and Node.js outside my primary PHP stack.',
+                'tech' => ['NestJS', 'Apache Kafka', 'TypeScript', 'MongoDB', 'MikroORM'],
+                'industry' => 'Professional: Healthcare Staffing',
+                'links' => [],
+            ],
+            [
+                'name' => 'Utility Usage & Alerting Dashboard',
+                'description' => 'A greenfield Laravel dashboard for property managers showing utility usage trends and reporting, with automated alerts for issues like leaks. Integrated with RentManager\'s MeterUtilityPlus to upload usage data and charges.',
+                'tech' => ['Laravel', 'Livewire', 'VueJS', 'TailwindCSS', 'MySQL', 'PHP'],
+                'industry' => 'Professional: Utility Submetering',
+                'links' => [],
+            ],
+            [
+                'name' => 'Utility Bill Approval Portal',
+                'description' => 'A Laravel client portal letting property managers log in, review, and approve utility bill payments, with reporting on billing history.',
+                'tech' => ['Laravel', 'Livewire', 'VueJS', 'TailwindCSS', 'MySQL', 'PHP'],
+                'industry' => 'Professional: Utility Submetering',
+                'links' => [],
+            ],
+            [
+                'name' => 'Restaurant Online Ordering Platform',
+                'description' => 'Built a SaaS-style online ordering platform for restaurants on WordPress and WooCommerce, including a custom WooCommerce plugin for group ordering and bespoke restaurant themes.',
+                'tech' => ['WordPress', 'WooCommerce'],
+                'industry' => 'Professional: Restaurant / Food Service',
+                'links' => [],
+            ],
+            [
+                'name' => 'Magento 2 Cloud Development',
+                'description' => 'Developed custom themes and modules, support for multiple Magento 2 Enterprise Cloud storefronts for a retailer in the e-cigarette industry.',
+                'tech' => ['Magento 2'],
+                'industry' => 'Professional: E-Commerce',
+                'links' => [],
+            ],
+            [
+                'name' => 'Magento 2 E-Commerce Operations & Migrations',
+                'description' => 'As a Jr. Web Developer at an e-commerce company running three Magento 2 Community Edition storefronts, built custom Magento 2 modules for business rules, migrated an acquired company\'s storefront from Shopify to Magento 2, and administered then migrated another acquisition\'s site from Magento 1 to Magento 2. Also owned day-to-day IT operations.',
+                'tech' => ['Magento 2'],
+                'industry' => 'Professional: E-Commerce',
+                'links' => [],
+            ],
+        ],
+    ],
+];

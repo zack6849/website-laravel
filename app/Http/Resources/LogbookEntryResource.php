@@ -23,7 +23,8 @@ class LogbookEntryResource extends JsonResource
         //alias the callsign fields
         $value = array_merge(parent::toArray($request), [
             'from_callsign' => $this->station->name,
-            'to_callsign' => $this->callee->name
+            'to_callsign' => $this->callee->name,
+            'qso_date' => $this->created_at?->format('Y-m-d H:i:s'),
         ]);
         $value['icon_size'] = 0.025;
         $value['icon'] = 'pin';

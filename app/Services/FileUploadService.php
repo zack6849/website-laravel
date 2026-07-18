@@ -55,16 +55,14 @@ class FileUploadService
      * Deletes a file from the disk, database, and purges it from the CDN
      * @throws FileCannotBeDeletedException
      */
-    public function delete(File $file): bool
+    public function delete(File $file): void
     {
         $result = $this->disk->delete($file->file_location);
         if (!$result) {
             throw new FileCannotBeDeletedException("Failed to delete the file from disk");
         }
-        //this bit of code is called
         $slug = $file->file_location;
         $file->delete();
         dispatch(new PurgeCDNCacheJob($slug));
-        return $result;
     }
 }

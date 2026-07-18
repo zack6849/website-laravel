@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\FileCannotBeDeletedException;
 use App\Http\Requests\UploadFileRequest;
 use App\Http\Resources\UploadedFileResource;
 use App\Http\Traits\SendsStatusResponses;
@@ -84,9 +85,11 @@ class FileController extends Controller
      */
     public function destroy(Request $request, File $file): array|RedirectResponse
     {
-        $success = $this->uploadService->delete($file);
-        if (!$success) {
-            return $this->sendResponse($request, 'File deletion failed', route('file.index'));
+        $this->authorize('delete', $file);
+        try {
+            $this->uploadService->delete($file);
+        } catch (FileCannotBeDeletedException) {
+            return $this->sendResponse($request, route('file.index'), 'File deletion failed');
         }
         return $this->sendResponse($request,
             route('file.index'),
@@ -108,6 +111,7 @@ class FileController extends Controller
         if (!$request->hasValidSignature()) {
             abort(401);
         }
+        $this->authorize('delete', $file);
         return view('files.delete', compact('file'));
     }
 }

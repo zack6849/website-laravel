@@ -73,12 +73,12 @@ class TwilioServiceTest extends TestCase
         $service = $this->partialMock(TwilioService::class, function(MockInterface $mock){
             //fake cache prime
             $mock->shouldReceive('hasCachedResponseFor')
-               ->with($this->anything())
+               ->withAnyArgs()
                ->andReturn(true)
                ->once();
             //fake twilio response
            $mock->shouldReceive('getTwilioInformationForPhoneNumber')
-               ->with($this->anything())
+               ->withAnyArgs()
                ->andReturn(static::getFixtureData('twilio_responses/v1/white-house.json'))
                ->once();
         });
@@ -103,6 +103,8 @@ class TwilioServiceTest extends TestCase
     #[Test]
     public function sendsRequestsToTwilio(): void
     {
+        //the identity add-on is always requested/cached regardless of caller trust level, so a
+        //number is only ever billed once; performLookup()/stripIdentityData() gate what's returned
         $phoneNumber = $this->service->normalizePhoneNumber($this->faker->e164PhoneNumber);
         $clientMock = $this->mock(Client::class, function (MockInterface $mock) use ($phoneNumber) {
 
@@ -117,6 +119,48 @@ class TwilioServiceTest extends TestCase
     }
 
     #[Test]
+    public function stripIdentityDataRemovesTheAddOnsKeyButKeepsTheRest(): void
+    {
+        $data = static::getFixtureData('twilio_responses/v1/white-house.json');
+        $stripped = $this->service->stripIdentityData($data);
+        $this->assertArrayNotHasKey('addOns', $stripped);
+        $this->assertEquals($data['carrier'], $stripped['carrier']);
+        $this->assertEquals($data['callerName'], $stripped['callerName']);
+        $this->assertEquals($data['countryCode'], $stripped['countryCode']);
+    }
+
+    #[Test]
+    public function performLookupRedactsIdentityDataForUntrustedCallers(): void
+    {
+        $service = $this->partialMock(TwilioService::class, function (MockInterface $mock) {
+            $mock->shouldReceive('hasCachedResponseFor')->andReturn(true);
+            $mock->shouldReceive('lookupNumber')
+                ->andReturn(static::getFixtureData('twilio_responses/v1/white-house.json'))
+                ->once();
+        });
+
+        //no $includeIdentityData argument: an untrusted/anonymous caller
+        $result = $service->performLookup($this->faker->e164PhoneNumber, null, $this->faker->ipv4);
+
+        $this->assertArrayNotHasKey('addOns', $result);
+    }
+
+    #[Test]
+    public function performLookupKeepsIdentityDataForTrustedCallers(): void
+    {
+        $service = $this->partialMock(TwilioService::class, function (MockInterface $mock) {
+            $mock->shouldReceive('hasCachedResponseFor')->andReturn(true);
+            $mock->shouldReceive('lookupNumber')
+                ->andReturn(static::getFixtureData('twilio_responses/v1/white-house.json'))
+                ->once();
+        });
+
+        $result = $service->performLookup($this->faker->e164PhoneNumber, null, $this->faker->ipv4, null, true);
+
+        $this->assertArrayHasKey('addOns', $result);
+    }
+
+    #[Test]
     #[DataProvider('phoneLookupResultProvider')]
     public function extractsDataCorrectly(
         array   $data,
@@ -126,8 +170,30 @@ class TwilioServiceTest extends TestCase
         ?string $country
     ): void
     {
-        $result = $this->service->extractData($data);
+        $result = $this->service->extractData($data, true);
         $this->assertEquals($name, $result['possible_owners']['name']);
+        $this->assertEquals($carrier, $result['carrier']);
+        $this->assertEquals($type, $result['type']);
+        $this->assertEquals($country, $result['country']);
+    }
+
+    #[Test]
+    #[DataProvider('phoneLookupResultProvider')]
+    public function omitsIdentityDataWhenNotRequestedEvenIfPresentInTheRawResponse(
+        array   $data,
+        string  $name,
+        ?string $carrier,
+        ?string $type,
+        ?string $country
+    ): void
+    {
+        //defense in depth: even if the raw response contains Ekata identity data
+        //(e.g. a stale/misrouted cache entry), the basic tier must never surface it
+        $result = $this->service->extractData($data);
+        $this->assertIsList($result['possible_owners']);
+        $this->assertNotEquals($name, $result['possible_owners'][0] ?? null);
+        $this->assertEmpty($result['associated_people']);
+        $this->assertEmpty($result['associated_addresses']);
         $this->assertEquals($carrier, $result['carrier']);
         $this->assertEquals($type, $result['type']);
         $this->assertEquals($country, $result['country']);
@@ -140,7 +206,7 @@ class TwilioServiceTest extends TestCase
         string $response,
     ): void
     {
-        $extracted = $this->service->extractData($data);
+        $extracted = $this->service->extractData($data, true);
         $sms = $this->service->toSms($extracted);
         $this->assertEquals($response, $sms);
     }

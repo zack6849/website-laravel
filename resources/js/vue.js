@@ -8,6 +8,7 @@ import photoGalleryComponent from './components/PhotoGalleryComponent.vue';
 import QSOMapComponent from './components/QSOMapComponent.vue';
 import projectCardComponent from "./components/ProjectCardComponent.vue";
 import technologyComponent from "./components/TechnologyComponent.vue";
+import showcaseComponent from "./components/Showcase.vue";
 
 const vuetify = createVuetify({
     icons: {
@@ -22,4 +23,5 @@ app.component('photo-gallery', photoGalleryComponent);
 app.component('project-card', projectCardComponent);
 app.component('technology', technologyComponent);
 app.component('qso-map', QSOMapComponent);
+app.component('showcase', showcaseComponent);
 app.mount('#app');

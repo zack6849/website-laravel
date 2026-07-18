@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\HamAlertSpotStoreRequest;
+use App\Jobs\PostHamAlertSpotToDiscordJob;
 use App\Models\HamAlertSpot;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Http;
 
 class HamAlertSpotsController extends Controller
 {
@@ -24,29 +24,19 @@ class HamAlertSpotsController extends Controller
         $spot->spotter_callsign = $request->input('spotter');
         $spot->created_at = Carbon::parse($request->input('time'), 'UTC');
         $spot->save();
-        Http::retry(3, 100)->post(config('services.discord.webhook_uri'), [
-            'content' => $this->formatSpot($spot)
-        ]);
+        dispatch(new PostHamAlertSpotToDiscordJob($spot));
         return $spot;
     }
 
     public function index()
     {
-        $records = HamAlertSpot::select('callsign')->distinct()->where('created_at', '>=', now()->subDay())->get();
-        $spots = collect();
-        foreach ($records as $record) {
-            $latest = HamAlertSpot::whereCallsign($record->callsign)->latest()->first();
-            $spots[$record->callsign] = $latest;
-        }
-        return $spots->sortByDesc('created_at')->transform(function ($spot) {
-            return ['summary' => $this->formatSpot($spot), 'latest_spot' => $spot->toArray()];
+        $spots = HamAlertSpot::where('created_at', '>=', now()->subDay())
+            ->orderByDesc('created_at')
+            ->get()
+            ->unique('callsign')
+            ->values();
+        return $spots->transform(function ($spot) {
+            return ['summary' => $spot->toDiscordSummary(), 'latest_spot' => $spot->toArray()];
         });
-    }
-
-    private function formatSpot(HamAlertSpot $spot)
-    {
-        return <<<EOL
-        {$spot->callsign} was spotted by {$spot->spotter_callsign} on {$spot->band} {$spot->mode} on {$spot->frequency} <t:{$spot->created_at->unix()}:R>
-        EOL;
     }
 }

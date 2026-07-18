@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -36,5 +37,14 @@ use Illuminate\Support\Carbon;
  */
 class HamAlertSpot extends Model
 {
+    use HasFactory;
+
     protected $guarded = [];
+
+    public function toDiscordSummary(): string
+    {
+        return <<<EOL
+        {$this->callsign} was spotted by {$this->spotter_callsign} on {$this->band} {$this->mode} on {$this->frequency} <t:{$this->created_at->unix()}:R>
+        EOL;
+    }
 }

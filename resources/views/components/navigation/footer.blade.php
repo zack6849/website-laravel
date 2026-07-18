@@ -1,5 +1,5 @@
-<div class=" bg-teal-500 pl-20 pr-20 p-6 text-white">
-    <div class="container mx-auto">  <div>
+<div class="bg-emerald-950 px-4 py-6 text-white sm:px-6 lg:px-8">
+    <div class="mx-auto w-full max-w-screen-2xl">  <div>
             Website and Images &copy; Zachary Craig {{ date('Y') }}
         </div>
     </div>

@@ -28,3 +28,55 @@ div#content{
 [x-cloak] {
     display: none;
 }
+.hilight {
+    box-shadow: 0 0 0 8px rgba(13, 148, 136, 0.35);
+}
+.glow {
+    animation: glow-highlight 1s;
+}
+#contact {
+    padding: 1rem;
+    scroll-margin-top: min(24rem, 45vh);
+}
+#contact.contact-highlight {
+    animation: glow-highlight 1s;
+    border-radius: 0.5rem;
+}
+
+@keyframes glow-highlight {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(13, 148, 136, 0); }
+    50% { box-shadow: 0 0 0 8px rgba(13, 148, 136, 0.25); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .glow,
+    #contact.contact-highlight {
+        animation: none;
+    }
+
+    #contact.contact-highlight {
+        box-shadow: 0 0 0 8px rgba(13, 148, 136, 0.25);
+    }
+}
+
+
+a[role='button'] {
+    padding: 10px;
+    margin: 5px;
+}
+
+/* Shared component classes, so pages/components reference one name instead of
+   re-listing the same utility combo everywhere. Change the look here, not per-usage. */
+@layer components {
+    .nav-link {
+        @apply text-nav-200 hover:text-white;
+    }
+    /* base shape/layout only — each usage supplies its own bg-color and hover:bg-color
+       utility classes so every platform link can carry its own brand color */
+    .btn-social {
+        @apply flex items-center gap-1.5 rounded-sm p-2 text-sm text-white shadow;
+    }
+    .btn-primary {
+        @apply rounded bg-brand-600 px-4 py-2 text-white shadow hover:bg-brand-700;
+    }
+}

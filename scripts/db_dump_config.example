@@ -1,5 +1,0 @@
-#!/bin/bash
-DB_SERVER='admin@10.31.1.80'
-MYSQL_USERNAME='username'
-MYSQL_PASSWORD='password'
-FILENAME="$1.dmp"

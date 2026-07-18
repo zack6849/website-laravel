@@ -6,7 +6,7 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @stack('meta')
-    <title>@yield('title') - {{ config('app.name', 'Laravel') }}</title>
+    <title>@yield('title') - {{ config('app.site_name', config('app.name', 'Laravel')) }}</title>
 
 
     <!-- Fonts -->
@@ -24,7 +24,7 @@
     <div id="header">
         <x-navigation.header/>
     </div>
-    <div id="content" class="container-fluid">
+    <div id="content" class="mx-auto w-full max-w-screen-2xl px-4 sm:px-6 lg:px-8">
         @yield('content')
     </div>
     <div id="footer">

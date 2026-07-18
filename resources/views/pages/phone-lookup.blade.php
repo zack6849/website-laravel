@@ -1,4 +1,4 @@
-<x-base-page title="Phone Number Lookup">
+<x-base-page title="Who's Calling Me?" maxwidth="max-w-3xl">
     @push('meta')
         <meta name="robots" content="NOINDEX, NOFOLLOW">
     @endpush

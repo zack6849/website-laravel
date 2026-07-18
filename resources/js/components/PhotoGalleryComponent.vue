@@ -1,9 +1,12 @@
 <template>
     <div class="photo-gallery-container">
-        <div class="photo-gallery flex flex-wrap justify-between">
-            <template v-for="photo in photos">
-                <photo-component v-if="photo.width_l >= 1024" v-bind:key="photo.id" v-bind:info="photo"/>
-            </template>
+        <div class="photo-gallery columns-2 gap-2 sm:gap-4 lg:columns-3 xl:columns-4">
+            <photo-component
+                v-for="photo in filteredPhotos"
+                :key="photo.id"
+                :info="photo"
+                class="mb-2 block break-inside-avoid sm:mb-4"
+            />
         </div>
     </div>
 </template>
@@ -25,6 +28,11 @@ export default {
         return {
             photos: [],
         };
+    },
+    computed: {
+        filteredPhotos() {
+            return this.photos.filter((photo) => Number(photo.width_l) >= 1024);
+        },
     },
     methods: {
         loadPhotos() {

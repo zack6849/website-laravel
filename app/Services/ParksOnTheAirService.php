@@ -15,12 +15,29 @@ class ParksOnTheAirService extends ServiceProvider
 
     private string $baseUrl = 'https://api.pota.app';
 
+    public function __construct()
+    {
+    }
+
     private function buildRequest(): PendingRequest
     {
         return Http::baseUrl($this->baseUrl)->acceptJson()->withHeaders([
             'Referer' => 'https://pota.app',
             'User-Agent' => 'Logbook Map (zcraig.me/qsos)'
         ]);
+    }
+
+    /**
+     * @param string[] $references
+     * @return string[] the subset of $references not already cached in pota_parks, in one query
+     */
+    public function filterUncachedReferences(array $references): array
+    {
+        if (empty($references)) {
+            return [];
+        }
+        $cached = POTAPark::whereIn('reference', $references)->pluck('reference')->all();
+        return array_values(array_diff($references, $cached));
     }
 
     public function getParkInfo(string $parkReference): POTAPark|false

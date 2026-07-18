@@ -5,7 +5,6 @@ namespace App\Jobs;
 use App\Models\Callsign;
 use App\Models\LogbookEntry;
 use App\Models\POTAPark;
-use App\Services\MainheadGridResolutionService;
 use App\Services\ParksOnTheAirService;
 use App\Services\QRZLogbookService;
 use Illuminate\Bus\Queueable;
@@ -15,6 +14,8 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class QRZLogbookImport implements ShouldQueue
 {
@@ -22,7 +23,6 @@ class QRZLogbookImport implements ShouldQueue
 
     private QRZLogbookService $logbookService;
     private ParksOnTheAirService $potaService;
-    private MainheadGridResolutionService $gridResolutionService;
 
     /**
      * Create a new job instance.
@@ -39,18 +39,50 @@ class QRZLogbookImport implements ShouldQueue
      * @return void
      */
     public function handle(
-        MainheadGridResolutionService $gridResolutionService,
         QRZLogbookService             $logbookProvider,
         ParksOnTheAirService          $parksOnTheAirServiceProvider
     )
     {
         $this->logbookService = $logbookProvider;
         $this->potaService = $parksOnTheAirServiceProvider;
-        $this->gridResolutionService = $gridResolutionService;
-        $records = $this->logbookService->getLogbookEntries();
-        LogbookEntry::query()->whereNotNull('created_at')->delete();
+        //cache the logbook for slightly under a day, so a same-time daily run never
+        //finds yesterday's cache entry still valid due to run-time drift
+        $records = Cache::remember('logbook', now()->addHours(23), function() {
+          return $this->logbookService->getLogbookEntries();
+        });
+        //make sure we don't clobber the db if we don't get any records back
+        if(!empty($records)){
+            //resolve/cache every distinct POTA park referenced in this batch *before* opening
+            //the transaction, so the blocking HTTP calls to api.pota.app for uncached parks
+            //don't happen while DB locks are held (saveRecord()'s getParkInfo() calls below
+            //hit the now-warm pota_parks table instead of the network)
+            $this->warmParkCache($records);
+            DB::transaction(function () use ($records) {
+                LogbookEntry::query()->whereNotNull('created_at')->delete();
+                foreach ($records as $record) {
+                    $this->saveRecord($record);
+                }
+            });
+        }
+
+    }
+
+    private function warmParkCache(array $records): void
+    {
+        $references = [];
         foreach ($records as $record) {
-            $this->saveRecord($record);
+            $reference = $this->extractParkReference(Arr::get($record, 'COMMENT', ''));
+            if ($reference !== null) {
+                $references[] = $reference;
+            }
+        }
+        $uniqueReferences = array_values(array_unique($references));
+        if (empty($uniqueReferences)) {
+            return;
+        }
+        //one query to find what's already cached, instead of one SELECT per reference
+        foreach ($this->potaService->filterUncachedReferences($uniqueReferences) as $reference) {
+            $this->potaService->getParkInfo($reference);
         }
     }
 
@@ -70,8 +102,9 @@ class QRZLogbookImport implements ShouldQueue
 
         $myLat = $this->transformCoordinates(Arr::get($record, 'MY_LAT'));
         $myLon = $this->transformCoordinates(Arr::get($record, 'MY_LON'));
-        $grid = $this->getGridsquare($record);
-        list($theirLat, $theirLon) = $this->getLatLong($record);
+        $park = $this->getRelatedPark($record);
+        $grid = $this->getGridSquare($record, $park);
+        list($theirLat, $theirLon) = $this->getLatLong($record, $park);
         $entry = LogbookEntry::make([
             'from_callsign' => $myCall->id,
             'to_callsign' => $theirCall->id,
@@ -93,7 +126,6 @@ class QRZLogbookImport implements ShouldQueue
         ]);
         $timestamp = Carbon::createFromFormat('YmdHi', $record['QSO_DATE'] . $record['TIME_ON']);
         $entry->created_at = $timestamp;
-        $park = $this->getRelatedPark($record);
         if($park !== null){
             $entry->park_id = $park->id;
             $entry->category = "POTA";
@@ -116,10 +148,9 @@ class QRZLogbookImport implements ShouldQueue
         return number_format("$prefix$mainLocator." . implode('', $matches), 5, '.', '');
     }
 
-    private function getGridSquare(array $adifEntry) : string
+    private function getGridSquare(array $adifEntry, ?POTAPark $park) : string
     {
         $grid = Arr::get($adifEntry, 'GRIDSQUARE', '');
-        $park = $this->getRelatedPark($adifEntry);
         if($park !== null){
             if (!empty(trim($park->grid4))) {
                 $grid = $park->grid4;
@@ -131,11 +162,10 @@ class QRZLogbookImport implements ShouldQueue
         return $grid;
     }
 
-    private function getLatLong(array $record) : array
+    private function getLatLong(array $record, ?POTAPark $park) : array
     {
         $lat = $this->transformCoordinates(Arr::get($record, 'LAT'));
         $lon = $this->transformCoordinates(Arr::get($record, 'LON'));
-        $park = $this->getRelatedPark($record);
         if ($park !== null) {
             $lat = $park->latitude;
             $lon = $park->longitude;
@@ -164,15 +194,21 @@ class QRZLogbookImport implements ShouldQueue
     private function findValidParks(string $comment) : array
     {
         $realParks = [];
-        if (preg_match('/([a-zA-Z]+-\d+)/', $comment, $matches)) {
-            $references = array_unique($matches);
-            foreach ($references as $reference) {
-                $park = $this->potaService->getParkInfo($reference);
-                if ($park !== false) {
-                    $realParks[] = $park;
-                }
+        $reference = $this->extractParkReference($comment);
+        if ($reference !== null) {
+            $park = $this->potaService->getParkInfo($reference);
+            if ($park !== false) {
+                $realParks[] = $park;
             }
         }
         return $realParks;
+    }
+
+    private function extractParkReference(string $comment): ?string
+    {
+        if (preg_match('/([a-zA-Z]+-\d+)/', $comment, $matches)) {
+            return $matches[1];
+        }
+        return null;
     }
 }

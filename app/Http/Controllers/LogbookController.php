@@ -19,9 +19,7 @@ class LogbookController extends Controller
             ->where('mode', $mode)->get()->each(function (LogbookEntry $entry) use (&$features) {
                 $location = new Point([floatval($entry->to_longitude), floatval($entry->to_latitude)]);
                 $resource = new LogbookEntryResource($entry);
-                $features[] = new Feature($location, [
-                    'description' => view('components.partials.qso-data', ['entry' => $entry])->render(),
-                    ... $resource->toArray(request())]);
+                $features[] = new Feature($location, $resource->toArray(request()));
 
             });
         return [
