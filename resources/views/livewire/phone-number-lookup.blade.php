@@ -1,7 +1,7 @@
 <div>
     <div class="mb-5">
         <p>
-            Look up the carrier and line type for a phone number &mdash; built because people-finder sites
+            Look up the carrier and line type for a phone number built because people-finder sites
             charge $30 for data Twilio sells for pennies.
         </p>
         <p>
@@ -67,7 +67,7 @@
                     <p><b>Caller Name:</b> {{$this->formattedResult['possible_owners'][0] ?? 'Unknown'}}</p>
                 </div>
                 <p class="text-sm text-gray-600">
-                    <a href="{{route('login')}}" class="underline">Log in</a> for full historical lookup details.
+                    <a href="{{route('login')}}" class="underline">Log in</a> for full lookup details.
                 </p>
             @endif
         </div>

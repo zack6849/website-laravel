@@ -71,12 +71,17 @@ class QRZLogbookImport implements ShouldQueue
     {
         $references = [];
         foreach ($records as $record) {
-            $comment = Arr::get($record, 'COMMENT', '');
-            if (preg_match('/([a-zA-Z]+-\d+)/', $comment, $matches)) {
-                $references[] = $matches[1];
+            $reference = $this->extractParkReference(Arr::get($record, 'COMMENT', ''));
+            if ($reference !== null) {
+                $references[] = $reference;
             }
         }
-        foreach (array_unique($references) as $reference) {
+        $uniqueReferences = array_values(array_unique($references));
+        if (empty($uniqueReferences)) {
+            return;
+        }
+        //one query to find what's already cached, instead of one SELECT per reference
+        foreach ($this->potaService->filterUncachedReferences($uniqueReferences) as $reference) {
             $this->potaService->getParkInfo($reference);
         }
     }
@@ -97,8 +102,9 @@ class QRZLogbookImport implements ShouldQueue
 
         $myLat = $this->transformCoordinates(Arr::get($record, 'MY_LAT'));
         $myLon = $this->transformCoordinates(Arr::get($record, 'MY_LON'));
-        $grid = $this->getGridSquare($record);
-        list($theirLat, $theirLon) = $this->getLatLong($record);
+        $park = $this->getRelatedPark($record);
+        $grid = $this->getGridSquare($record, $park);
+        list($theirLat, $theirLon) = $this->getLatLong($record, $park);
         $entry = LogbookEntry::make([
             'from_callsign' => $myCall->id,
             'to_callsign' => $theirCall->id,
@@ -120,7 +126,6 @@ class QRZLogbookImport implements ShouldQueue
         ]);
         $timestamp = Carbon::createFromFormat('YmdHi', $record['QSO_DATE'] . $record['TIME_ON']);
         $entry->created_at = $timestamp;
-        $park = $this->getRelatedPark($record);
         if($park !== null){
             $entry->park_id = $park->id;
             $entry->category = "POTA";
@@ -143,10 +148,9 @@ class QRZLogbookImport implements ShouldQueue
         return number_format("$prefix$mainLocator." . implode('', $matches), 5, '.', '');
     }
 
-    private function getGridSquare(array $adifEntry) : string
+    private function getGridSquare(array $adifEntry, ?POTAPark $park) : string
     {
         $grid = Arr::get($adifEntry, 'GRIDSQUARE', '');
-        $park = $this->getRelatedPark($adifEntry);
         if($park !== null){
             if (!empty(trim($park->grid4))) {
                 $grid = $park->grid4;
@@ -158,11 +162,10 @@ class QRZLogbookImport implements ShouldQueue
         return $grid;
     }
 
-    private function getLatLong(array $record) : array
+    private function getLatLong(array $record, ?POTAPark $park) : array
     {
         $lat = $this->transformCoordinates(Arr::get($record, 'LAT'));
         $lon = $this->transformCoordinates(Arr::get($record, 'LON'));
-        $park = $this->getRelatedPark($record);
         if ($park !== null) {
             $lat = $park->latitude;
             $lon = $park->longitude;
@@ -191,15 +194,21 @@ class QRZLogbookImport implements ShouldQueue
     private function findValidParks(string $comment) : array
     {
         $realParks = [];
-        if (preg_match('/([a-zA-Z]+-\d+)/', $comment, $matches)) {
-            $references = array_unique($matches);
-            foreach ($references as $reference) {
-                $park = $this->potaService->getParkInfo($reference);
-                if ($park !== false) {
-                    $realParks[] = $park;
-                }
+        $reference = $this->extractParkReference($comment);
+        if ($reference !== null) {
+            $park = $this->potaService->getParkInfo($reference);
+            if ($park !== false) {
+                $realParks[] = $park;
             }
         }
         return $realParks;
+    }
+
+    private function extractParkReference(string $comment): ?string
+    {
+        if (preg_match('/([a-zA-Z]+-\d+)/', $comment, $matches)) {
+            return $matches[1];
+        }
+        return null;
     }
 }

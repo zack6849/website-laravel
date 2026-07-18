@@ -27,6 +27,19 @@ class ParksOnTheAirService extends ServiceProvider
         ]);
     }
 
+    /**
+     * @param string[] $references
+     * @return string[] the subset of $references not already cached in pota_parks, in one query
+     */
+    public function filterUncachedReferences(array $references): array
+    {
+        if (empty($references)) {
+            return [];
+        }
+        $cached = POTAPark::whereIn('reference', $references)->pluck('reference')->all();
+        return array_values(array_diff($references, $cached));
+    }
+
     public function getParkInfo(string $parkReference): POTAPark|false
     {
         $parkData = POTAPark::where('reference', $parkReference)->first();

@@ -40,4 +40,11 @@ class HamAlertSpot extends Model
     use HasFactory;
 
     protected $guarded = [];
+
+    public function toDiscordSummary(): string
+    {
+        return <<<EOL
+        {$this->callsign} was spotted by {$this->spotter_callsign} on {$this->band} {$this->mode} on {$this->frequency} <t:{$this->created_at->unix()}:R>
+        EOL;
+    }
 }

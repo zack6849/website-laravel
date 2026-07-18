@@ -36,9 +36,10 @@ div#content{
 }
 #contact {
     padding: 1rem;
+    scroll-margin-top: min(24rem, 45vh);
 }
-#contact:target {
-    animation: glow-highlight 1s ease-in-out infinite;
+#contact.contact-highlight {
+    animation: glow-highlight 1s;
     border-radius: 0.5rem;
 }
 
@@ -48,15 +49,16 @@ div#content{
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .glow-highlight {
+    .glow,
+    #contact.contact-highlight {
         animation: none;
+    }
+
+    #contact.contact-highlight {
         box-shadow: 0 0 0 8px rgba(13, 148, 136, 0.25);
     }
 }
 
-svg[class*="svg-inline"][role="img"]{
-    padding-right: 10px;
-}
 
 a[role='button'] {
     padding: 10px;
@@ -69,8 +71,10 @@ a[role='button'] {
     .nav-link {
         @apply text-nav-200 hover:text-white;
     }
+    /* base shape/layout only — each usage supplies its own bg-color and hover:bg-color
+       utility classes so every platform link can carry its own brand color */
     .btn-social {
-        @apply flex items-center gap-1.5 rounded-full bg-gray-800 px-3 py-2 text-sm text-white shadow;
+        @apply flex items-center gap-1.5 rounded-sm p-2 text-sm text-white shadow;
     }
     .btn-primary {
         @apply rounded bg-brand-600 px-4 py-2 text-white shadow hover:bg-brand-700;

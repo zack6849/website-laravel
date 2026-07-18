@@ -31,24 +31,31 @@ class QRZLogbookService
         if(!$response->successful()){
             $response->throw();
         }
+        $data = $this->parseResponseBody($response->body());
         //QRZ's API always responds HTTP 200, even on auth/logical failure, and
         //signals errors via STATUS/RESULT/REASON fields in the body instead
-        parse_str($response->body(), $data);
         if (!isset($data['ADIF'])) {
             throw new QRZAPIException(
                 'QRZ logbook fetch failed: ' . ($data['REASON'] ?? $response->body())
             );
         }
-        return $this->parseLogbookEntries($response->body());
+        $adifData = str_replace('{AMP}', '&', $data['ADIF']);
+        return (new Parser())->parse($adifData);
     }
 
     public function parseLogbookEntries($adifString){
-        $responseText = str_replace(["&lt;", "&gt;", "\n"], ["<", ">", ""], $adifString);
+        $data = $this->parseResponseBody($adifString);
+        $adifData = str_replace('{AMP}', '&', $data['ADIF']);
+        return (new Parser())->parse($adifData);
+    }
+
+    private function parseResponseBody(string $responseBody): array
+    {
+        $responseText = str_replace(["&lt;", "&gt;", "\n"], ["<", ">", ""], $responseBody);
         $responseText = preg_replace("/&(?![^\s=]+=[^\s=])/m", "{AMP}", $responseText);
         $responseText = htmlspecialchars_decode($responseText);
         $data = [];
         parse_str($responseText, $data);
-        $adifData = str_replace('{AMP}', '&', $data['ADIF']);
-        return (new Parser())->parse($adifData);
+        return $data;
     }
 }

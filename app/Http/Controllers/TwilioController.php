@@ -17,15 +17,7 @@ class TwilioController extends Controller
 
     public function lookup($phone_number, TwilioService $twilio, Request $request)
     {
-        //only logged-in (trusted) requesters get the paid identity/address tier; anonymous
-        //visitors get carrier/line-type/CNAM only
-        $includeIdentityData = $request->user() !== null;
-        try {
-            $result = $twilio->performLookup($phone_number, $request->user(), $request->ip(), null, $includeIdentityData);
-        } catch (TwilioException $e) {
-            Log::error('Twilio lookup failed', ['exception' => $e]);
-            abort(502, "Something went wrong looking up that number. Please try again later.");
-        }
+        [$result, $includeIdentityData] = $this->performLookupOrAbort($phone_number, $twilio, $request);
         return $twilio->extractData($result, $includeIdentityData);
     }
 
@@ -36,13 +28,21 @@ class TwilioController extends Controller
 
     public function rawLookup($phone_number, TwilioService $twilio, Request $request)
     {
-        $includeIdentityData = $request->user() !== null;
+        [$result] = $this->performLookupOrAbort($phone_number, $twilio, $request);
+        return $result;
+    }
+
+    //shared by lookup() and rawLookup() so the trust computation and error handling can't drift between the two
+    private function performLookupOrAbort($phone_number, TwilioService $twilio, Request $request): array
+    {
+        $includeIdentityData = $twilio->isTrustedRequester($request->user());
         try {
-            return $twilio->performLookup($phone_number, $request->user(), $request->ip(), null, $includeIdentityData);
+            $result = $twilio->performLookup($phone_number, $request->user(), $request->ip(), null, $includeIdentityData);
         } catch (TwilioException $e) {
             Log::error('Twilio lookup failed', ['exception' => $e]);
             abort(502, "Something went wrong looking up that number. Please try again later.");
         }
+        return [$result, $includeIdentityData];
     }
 
     public function twilioResponse(Request $request, TwilioService $provider){

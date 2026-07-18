@@ -54,77 +54,66 @@
             </div>
 
             <div class="grid grid-cols-1 gap-6 lg:items-start" :class="activeContext === 'all' ? 'lg:grid-cols-2' : 'lg:grid-cols-1'">
-                <div v-if="activeContext !== 'personal'" class="order-1 space-y-4">
-                    <project-card
-                        v-for="(project, index) in professionalFeatured"
-                        :key="`professional-featured-${project.name}-${index}`"
-                        :project="project"
+                <!--
+                    On mobile this wrapper is `display: contents`, so its children (featured/personal/archive)
+                    become direct items of the outer grid and can interleave with the professional column via
+                    `order`. On desktop it becomes a real flex column instead, so it's a single grid item again
+                    (independently sized from the professional column) — otherwise the outer grid shares row
+                    heights across both columns and expanding one column's fold blows out empty space in the
+                    other.
+                -->
+                <div v-if="activeContext !== 'professional'" class="contents lg:order-1 lg:col-start-1 lg:flex lg:flex-col lg:gap-6">
+                    <div v-if="personalFeatured" class="order-1">
+                        <project-card :project="personalFeatured" />
+                    </div>
+
+                    <showcase-project-column
+                        v-if="personalNonArchive.length"
+                        class="order-3"
+                        category="personal"
+                        :projects="personalNonArchive"
                     />
-                    <template v-if="professionalRest.length">
-                        <div v-show="showAllProfessional" class="space-y-4">
-                            <project-card
-                                v-for="(project, index) in professionalRest"
-                                :key="`professional-rest-${project.name}-${index}`"
-                                :project="project"
-                            />
-                        </div>
-                        <button
-                            v-if="!showAllProfessional"
-                            type="button"
-                            @click="showAllProfessional = true"
-                            class="w-full rounded border border-dashed border-gray-300 py-2 text-sm text-gray-500 hover:border-gray-400 hover:text-gray-700"
-                        >
-                            Show {{ professionalRest.length }} more professional project{{ professionalRest.length === 1 ? '' : 's' }} <i class="fas fa-chevron-down text-xs"></i>
-                        </button>
-                    </template>
-                </div>
-                <div v-if="activeContext !== 'professional'" class="order-2 space-y-4">
-                    <project-card
-                        v-for="(project, index) in personalFeatured"
-                        :key="`personal-featured-${project.name}-${index}`"
-                        :project="project"
+
+                    <showcase-project-column
+                        v-if="personalArchive.length"
+                        class="order-4"
+                        category="archived"
+                        :projects="personalArchive"
                     />
-                    <template v-if="personalRest.length">
-                        <div v-show="showAllPersonal" class="space-y-4">
-                            <project-card
-                                v-for="(project, index) in personalRest"
-                                :key="`personal-rest-${project.name}-${index}`"
-                                :project="project"
-                            />
-                        </div>
-                        <button
-                            v-if="!showAllPersonal"
-                            type="button"
-                            @click="showAllPersonal = true"
-                            class="w-full rounded border border-dashed border-gray-300 py-2 text-sm text-gray-500 hover:border-gray-400 hover:text-gray-700"
-                        >
-                            Show {{ personalRest.length }} more personal project{{ personalRest.length === 1 ? '' : 's' }} <i class="fas fa-chevron-down text-xs"></i>
-                        </button>
-                    </template>
                 </div>
+
+                <showcase-project-column
+                    v-if="activeContext !== 'personal'"
+                    class="order-2 lg:order-2"
+                    category="professional"
+                    :projects="categorizedProjects.professional"
+                />
             </div>
         </div>
     </div>
 </template>
 
 <script>
+import ShowcaseProjectColumn from './ShowcaseProjectColumn.vue';
+
 export default {
     name: 'Showcase',
+    components: {
+        ShowcaseProjectColumn,
+    },
     props: {
         categories: {
             type: Object,
             required: true,
         },
         projects: {
-            type: [Array, Object],
+            type: Object,
             required: true,
         },
     },
     data() {
         return {
             activeContext: 'all',
-            showAllProfessional: false,
-            showAllPersonal: false,
             options: [
                 { value: 'all', label: 'All' },
                 { value: 'personal', label: 'Personal' },
@@ -133,26 +122,7 @@ export default {
         };
     },
     computed: {
-        professionalFeatured() {
-            return this.filteredProjects.professional.filter((project) => project.featured);
-        },
-        professionalRest() {
-            return this.filteredProjects.professional.filter((project) => !project.featured);
-        },
-        personalFeatured() {
-            return this.filteredProjects.personal.filter((project) => project.featured);
-        },
-        personalRest() {
-            return this.filteredProjects.personal.filter((project) => !project.featured);
-        },
         categorizedProjects() {
-            if (Array.isArray(this.projects)) {
-                return {
-                    professional: this.projects.filter((project) => project.context === 'professional'),
-                    personal: this.projects.filter((project) => project.context !== 'professional'),
-                };
-            }
-
             const categories = this.projects?.categories ?? {};
 
             return {
@@ -160,22 +130,14 @@ export default {
                 personal: Array.isArray(categories.personal) ? categories.personal : [],
             };
         },
-        filteredProjects() {
-            if (this.activeContext === 'all') {
-                return this.categorizedProjects;
-            }
-
-            if (this.activeContext === 'professional') {
-                return {
-                    professional: this.categorizedProjects.professional,
-                    personal: [],
-                };
-            }
-
-            return {
-                professional: [],
-                personal: this.categorizedProjects.personal,
-            };
+        personalFeatured() {
+            return this.categorizedProjects.personal.find((project) => project.featured) ?? null;
+        },
+        personalNonArchive() {
+            return this.categorizedProjects.personal.filter((project) => !project.featured && project.status !== 'Retired');
+        },
+        personalArchive() {
+            return this.categorizedProjects.personal.filter((project) => !project.featured && project.status === 'Retired');
         },
         visibleTechNames() {
             if (this.activeContext === 'all') {

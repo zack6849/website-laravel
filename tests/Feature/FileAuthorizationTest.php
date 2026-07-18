@@ -14,6 +14,17 @@ use Tests\TestCase;
 
 class FileAuthorizationTest extends TestCase
 {
+    private User $owner;
+    private File $file;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Storage::fake(config('upload.storage.disk'));
+        $this->owner = User::factory()->create();
+        $this->file = File::factory()->create(['user_id' => $this->owner->id, 'filename' => $this->safeFilename()]);
+    }
+
     //FileFactory's default filename() uses asciify() and can produce URL-unsafe
     //characters that break route-model-binding on a generated URL; real uploads use
     //safe UUID-based names (FileUploadService::getFilename()), so use one here too
@@ -25,41 +36,33 @@ class FileAuthorizationTest extends TestCase
     #[Test]
     public function ownerCanDeleteTheirOwnFile(): void
     {
-        Storage::fake(config('upload.storage.disk'));
         Bus::fake();
-        $owner = User::factory()->create();
-        $file = File::factory()->create(['user_id' => $owner->id, 'filename' => $this->safeFilename()]);
 
-        $response = $this->actingAs($owner)->post(route('file.destroy', ['file' => $file->filename]));
+        $response = $this->actingAs($this->owner)->post(route('file.destroy', ['file' => $this->file->filename]));
 
         $response->assertRedirect(route('file.index'));
-        $this->assertDatabaseMissing('files', ['id' => $file->id]);
+        $this->assertDatabaseMissing('files', ['id' => $this->file->id]);
     }
 
     #[Test]
     public function nonOwnerCannotDeleteAnotherUsersFileViaDestroy(): void
     {
-        Storage::fake(config('upload.storage.disk'));
         Bus::fake();
-        $owner = User::factory()->create();
         $otherUser = User::factory()->create();
-        $file = File::factory()->create(['user_id' => $owner->id, 'filename' => $this->safeFilename()]);
 
-        $response = $this->actingAs($otherUser)->post(route('file.destroy', ['file' => $file->filename]));
+        $response = $this->actingAs($otherUser)->post(route('file.destroy', ['file' => $this->file->filename]));
 
         $response->assertForbidden();
-        $this->assertDatabaseHas('files', ['id' => $file->id]);
+        $this->assertDatabaseHas('files', ['id' => $this->file->id]);
     }
 
     #[Test]
     public function nonOwnerCannotReachTheDeleteConfirmationPageEvenWithAValidSignature(): void
     {
-        $owner = User::factory()->create();
         $otherUser = User::factory()->create();
-        $file = File::factory()->create(['user_id' => $owner->id, 'filename' => $this->safeFilename()]);
 
         //a validly-signed delete URL, but requested by someone who isn't the file's owner
-        $response = $this->actingAs($otherUser)->get($file->delete_url);
+        $response = $this->actingAs($otherUser)->get($this->file->delete_url);
 
         $response->assertForbidden();
     }
@@ -67,10 +70,7 @@ class FileAuthorizationTest extends TestCase
     #[Test]
     public function ownerCanReachTheDeleteConfirmationPage(): void
     {
-        $owner = User::factory()->create();
-        $file = File::factory()->create(['user_id' => $owner->id, 'filename' => $this->safeFilename()]);
-
-        $response = $this->actingAs($owner)->get($file->delete_url);
+        $response = $this->actingAs($this->owner)->get($this->file->delete_url);
 
         $response->assertOk();
     }

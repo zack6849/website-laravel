@@ -51,6 +51,9 @@ class QRZLogbookImportTest extends TestCase
             $mock->shouldReceive('getLogbookEntries')->once()->andReturn([$goodRecord, $badRecord]);
         });
         $this->mock(ParksOnTheAirService::class, function (MockInterface $mock) {
+            $mock->shouldReceive('filterUncachedReferences')
+                ->with(['K-1234'])
+                ->andReturn(['K-1234']);
             $mock->shouldReceive('getParkInfo')
                 ->with('K-1234')
                 ->andThrow(new \RuntimeException('POTA API unavailable'));

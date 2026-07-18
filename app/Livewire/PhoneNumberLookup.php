@@ -54,8 +54,7 @@ class PhoneNumberLookup extends Component
         $this->formattedResult = null;
         $this->resultSummary = null;
         $this->phoneNumber = $service->normalizePhoneNumber($this->phoneNumber);
-        //only a logged-in visitor (Zack/family) gets the paid identity/address tier
-        $this->includeIdentityData = request()->user() !== null;
+        $this->includeIdentityData = $service->isTrustedRequester(request()->user());
         try {
             $this->result = $service->performLookup($this->phoneNumber, request()->user(), request()->ip(), null, $this->includeIdentityData);
         } catch (HttpException $e) {

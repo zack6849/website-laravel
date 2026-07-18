@@ -20,6 +20,14 @@ class TwilioService
     {
     }
 
+    //only logged-in (trusted) requesters get the paid identity/address tier; anonymous
+    //visitors get carrier/line-type/CNAM only. Centralized here since performLookup()'s
+    //$includeIdentityData is security-relevant and every caller must compute it the same way.
+    public function isTrustedRequester(?User $user): bool
+    {
+        return $user !== null;
+    }
+
     /**
      * Builds the rate limit key/limit/decay for a lookup request, keyed by
      * user when authenticated, otherwise by IP.

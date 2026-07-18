@@ -36,14 +36,7 @@ class HamAlertSpotsController extends Controller
             ->unique('callsign')
             ->values();
         return $spots->transform(function ($spot) {
-            return ['summary' => $this->formatSpot($spot), 'latest_spot' => $spot->toArray()];
+            return ['summary' => $spot->toDiscordSummary(), 'latest_spot' => $spot->toArray()];
         });
-    }
-
-    private function formatSpot(HamAlertSpot $spot)
-    {
-        return <<<EOL
-        {$spot->callsign} was spotted by {$spot->spotter_callsign} on {$spot->band} {$spot->mode} on {$spot->frequency} <t:{$spot->created_at->unix()}:R>
-        EOL;
     }
 }

@@ -84,17 +84,7 @@ class PublicPhoneLookupTest extends TestCase
         $this->mockTwilioService();
 
         $user = $user();
-        if($user == null){
-            config([
-                'twilio.public_rate_limit' => 1,
-                'twilio.public_decay_rate' => 999,
-            ]);
-        }else {
-            $user->update([
-                'lookup_limit' => 1,
-                'lookup_decay_rate' => 999,
-            ]);
-        }
+        $this->applyRateLimitOfOne($user);
 
         $this->getLivewireInstance(PhoneNumberLookup::class, $user)
             ->assertSet('remainingLookups', 1)
@@ -118,17 +108,7 @@ class PublicPhoneLookupTest extends TestCase
         $this->mockTwilioService();
 
         $user = $user();
-        if ($user == null) {
-            config([
-                'twilio.public_rate_limit' => 1,
-                'twilio.public_decay_rate' => 999,
-            ]);
-        } else {
-            $user->update([
-                'lookup_limit' => 1,
-                'lookup_decay_rate' => 999,
-            ]);
-        }
+        $this->applyRateLimitOfOne($user);
 
         $instance = $this->getLivewireInstance(PhoneNumberLookup::class, $user)
             ->set('phoneNumber', $this->faker->phoneNumber)
@@ -161,17 +141,7 @@ class PublicPhoneLookupTest extends TestCase
         $this->mockTwilioService();
 
         $user = $user();
-        if ($user == null) {
-            config([
-                'twilio.public_rate_limit' => 1,
-                'twilio.public_decay_rate' => 999,
-            ]);
-        } else {
-            $user->update([
-                'lookup_limit' => 1,
-                'lookup_decay_rate' => 999,
-            ]);
-        }
+        $this->applyRateLimitOfOne($user);
 
         $instance = $this->getLivewireInstance(PhoneNumberLookup::class, $user)
             ->set('phoneNumber', $this->faker->phoneNumber)
@@ -252,6 +222,24 @@ class PublicPhoneLookupTest extends TestCase
             ->assertSet('includeIdentityData', true)
             ->assertSeeText('Jane Q Public')
             ->assertSeeText('123 Secret St');
+    }
+
+    //drops the effective rate limit to 1 lookup per ~999s, scoped to the given user (or
+    //the shared anonymous/IP config when $user is null), so a test can force the limit
+    //to be hit after a single lookup
+    private function applyRateLimitOfOne(?User $user): void
+    {
+        if ($user === null) {
+            config([
+                'twilio.public_rate_limit' => 1,
+                'twilio.public_decay_rate' => 999,
+            ]);
+        } else {
+            $user->update([
+                'lookup_limit' => 1,
+                'lookup_decay_rate' => 999,
+            ]);
+        }
     }
 
     /**

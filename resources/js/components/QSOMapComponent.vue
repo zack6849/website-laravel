@@ -35,6 +35,7 @@
 <script>
 import {Map, Popup} from 'maplibre-gl';
 import {isMapboxURL, transformMapboxUrl} from 'maplibregl-mapbox-request-transformer'
+import {escape} from 'lodash';
 
 export default {
     name: 'QSOMapComponent',
@@ -149,21 +150,13 @@ export default {
             });
             this.loadQsos();
         },
-        escapeHtml(value) {
-            return String(value ?? '')
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        },
         buildPopupDescription(properties) {
-            const mode = this.escapeHtml(properties.mode);
-            const toCallsign = this.escapeHtml(properties.to_callsign);
-            const date = this.escapeHtml(properties.qso_date ?? properties.created_at ?? '');
-            const frequency = this.escapeHtml(properties.frequency);
-            const rstReceived = this.escapeHtml(properties.rst_received);
-            const toGrid = this.escapeHtml(properties.to_grid);
+            const mode = escape(properties.mode);
+            const toCallsign = escape(properties.to_callsign);
+            const date = escape(properties.qso_date ?? properties.created_at ?? '');
+            const frequency = escape(properties.frequency);
+            const rstReceived = escape(properties.rst_received);
+            const toGrid = escape(properties.to_grid);
             const comments = String(properties.comments ?? '').trim();
 
             let html = '<div>';
@@ -178,7 +171,7 @@ export default {
                 html += `<div><b>Grid: ${toGrid}</b></div>`;
             }
             if (comments !== '') {
-                html += `<div><b>Comments:</b> ${this.escapeHtml(comments)}</div>`;
+                html += `<div><b>Comments:</b> ${escape(comments)}</div>`;
             }
 
             html += '</div>';

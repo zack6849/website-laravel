@@ -17,7 +17,6 @@ return [
             ['name' => 'Magento 2', 'tier' => 2, 'trend' => 'down'],
             ['name' => 'NestJS', 'tier' => 2],
             ['name' => 'MikroORM', 'tier' => 2],
-            ['name' => 'Spring', 'tier' => 3, 'trend' => 'down'],
         ],
         'Frontend' => [
             ['name' => 'VueJS', 'image' => 'img/logos/vue.svg', 'tier' => 1],

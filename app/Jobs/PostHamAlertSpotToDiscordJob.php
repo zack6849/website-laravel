@@ -22,14 +22,7 @@ class PostHamAlertSpotToDiscordJob implements ShouldQueue
     public function handle(): void
     {
         Http::retry(3, 100)->post(config('services.discord.webhook_uri'), [
-            'content' => $this->formatSpot($this->spot),
+            'content' => $this->spot->toDiscordSummary(),
         ]);
-    }
-
-    private function formatSpot(HamAlertSpot $spot): string
-    {
-        return <<<EOL
-        {$spot->callsign} was spotted by {$spot->spotter_callsign} on {$spot->band} {$spot->mode} on {$spot->frequency} <t:{$spot->created_at->unix()}:R>
-        EOL;
     }
 }
