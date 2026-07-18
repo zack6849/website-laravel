@@ -15,6 +15,10 @@ class ParksOnTheAirService extends ServiceProvider
 
     private string $baseUrl = 'https://api.pota.app';
 
+    public function __construct()
+    {
+    }
+
     private function buildRequest(): PendingRequest
     {
         return Http::baseUrl($this->baseUrl)->acceptJson()->withHeaders([

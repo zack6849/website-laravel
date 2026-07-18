@@ -5,7 +5,6 @@ namespace App\Jobs;
 use App\Models\Callsign;
 use App\Models\LogbookEntry;
 use App\Models\POTAPark;
-use App\Services\MainheadGridResolutionService;
 use App\Services\ParksOnTheAirService;
 use App\Services\QRZLogbookService;
 use Illuminate\Bus\Queueable;
@@ -15,6 +14,8 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class QRZLogbookImport implements ShouldQueue
 {
@@ -22,7 +23,6 @@ class QRZLogbookImport implements ShouldQueue
 
     private QRZLogbookService $logbookService;
     private ParksOnTheAirService $potaService;
-    private MainheadGridResolutionService $gridResolutionService;
 
     /**
      * Create a new job instance.
@@ -39,18 +39,45 @@ class QRZLogbookImport implements ShouldQueue
      * @return void
      */
     public function handle(
-        MainheadGridResolutionService $gridResolutionService,
         QRZLogbookService             $logbookProvider,
         ParksOnTheAirService          $parksOnTheAirServiceProvider
     )
     {
         $this->logbookService = $logbookProvider;
         $this->potaService = $parksOnTheAirServiceProvider;
-        $this->gridResolutionService = $gridResolutionService;
-        $records = $this->logbookService->getLogbookEntries();
-        LogbookEntry::query()->whereNotNull('created_at')->delete();
+        //cache the logbook for slightly under a day, so a same-time daily run never
+        //finds yesterday's cache entry still valid due to run-time drift
+        $records = Cache::remember('logbook', now()->addHours(23), function() {
+          return $this->logbookService->getLogbookEntries();
+        });
+        //make sure we don't clobber the db if we don't get any records back
+        if(!empty($records)){
+            //resolve/cache every distinct POTA park referenced in this batch *before* opening
+            //the transaction, so the blocking HTTP calls to api.pota.app for uncached parks
+            //don't happen while DB locks are held (saveRecord()'s getParkInfo() calls below
+            //hit the now-warm pota_parks table instead of the network)
+            $this->warmParkCache($records);
+            DB::transaction(function () use ($records) {
+                LogbookEntry::query()->whereNotNull('created_at')->delete();
+                foreach ($records as $record) {
+                    $this->saveRecord($record);
+                }
+            });
+        }
+
+    }
+
+    private function warmParkCache(array $records): void
+    {
+        $references = [];
         foreach ($records as $record) {
-            $this->saveRecord($record);
+            $comment = Arr::get($record, 'COMMENT', '');
+            if (preg_match('/([a-zA-Z]+-\d+)/', $comment, $matches)) {
+                $references[] = $matches[1];
+            }
+        }
+        foreach (array_unique($references) as $reference) {
+            $this->potaService->getParkInfo($reference);
         }
     }
 
@@ -70,7 +97,7 @@ class QRZLogbookImport implements ShouldQueue
 
         $myLat = $this->transformCoordinates(Arr::get($record, 'MY_LAT'));
         $myLon = $this->transformCoordinates(Arr::get($record, 'MY_LON'));
-        $grid = $this->getGridsquare($record);
+        $grid = $this->getGridSquare($record);
         list($theirLat, $theirLon) = $this->getLatLong($record);
         $entry = LogbookEntry::make([
             'from_callsign' => $myCall->id,

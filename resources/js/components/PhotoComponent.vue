@@ -1,12 +1,19 @@
 <!-- resources/js/components/PhotoComponent.vue -->
 <template>
-    <div class="photo-container m-4 shadow-lg">
-        <div class="max-w-sm rounded overflow-hidden">
-            <img @click="openFlickr" class="w-full cursor-pointer" :src="info.url_m" :alt="info.title">
-            <div class="px-6 py-4">
-                <div class="font-bold text-xl mb-2">{{ info.title }}</div>
+    <article class="photo-container overflow-hidden rounded bg-white shadow-lg">
+        <div>
+            <img
+                @click="openFlickr"
+                class="h-auto max-h-[28rem] w-full cursor-pointer object-cover object-center"
+                :src="info.url_m"
+                :alt="info.title"
+                loading="lazy"
+                decoding="async"
+            >
+            <div class="px-4 py-3">
+                <div class="mb-2 text-lg font-bold">{{ info.title }}</div>
             </div>
-            <div class="px-6 py-4">
+            <div class="px-4 pb-4">
                 <span
                     v-if="info.tags.length > 0"
                     v-for="tag in info.tags.split(' ')"
@@ -16,7 +23,7 @@
                 />
             </div>
         </div>
-    </div>
+    </article>
 </template>
 
 <script>

@@ -46,7 +46,7 @@ class MainheadGridResolutionService
 
     public function getGridSquare(string $squareId): array
     {
-        if (strlen($squareId) % 2 != 0) {
+        if ($squareId === '' || strlen($squareId) % 2 != 0) {
             return array(null, null, null, null);
         }
 

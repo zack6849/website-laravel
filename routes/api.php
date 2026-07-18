@@ -14,13 +14,8 @@ declare(strict_types=1);
 Route::middleware("auth:api")->group(function () {
     Route::prefix("/files")->group(function () {
         Route::post('/', 'FileController@store')->name("api.file.store");
-        Route::delete('/{file}', 'FileController@destroy')->name("api.file.delete");
+        Route::delete('/{file:filename}', 'FileController@destroy')->name("api.file.delete");
     });
-    Route::prefix("/homescan")->group(function () {
-        Route::post('/', 'HomeScanController@search')->name("api.homescan.scan");
-        Route::post('/byaddress', 'HomeScanController@searchByAddress')->name("api.homescan.scan.byaddress");
-    });
-
     Route::prefix('/twilio')->group(function () {
         Route::post('/lookup', 'TwilioController@twilioResponse')->name('twilio.sms');
     });

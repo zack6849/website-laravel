@@ -1,13 +1,20 @@
 <template>
-    <div class="technology py-3 px-2 text-white shadow mr-1 mt-2 bg-white flex">
-        <img :alt="name" v-bind:src="image" class="pr-2 technology-logo" style="max-width: 40px; max-height: 20px;">
-        <span v-text="name" class="text-black technology-text"></span>
-    </div>
+    <img v-if="image" :alt="name" v-bind:src="image" class="w-4 h-4">
+    <span v-text="name"></span>
 </template>
 
 <script>
     export default {
         name: 'TechnologyComponent',
-        props: ['name', 'image']
+        props: {
+            name: {
+                type: String,
+                required: true,
+            },
+            image: {
+                type: String,
+                default: null,
+            },
+        },
     }
 </script>

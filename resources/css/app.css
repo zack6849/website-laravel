@@ -28,3 +28,51 @@ div#content{
 [x-cloak] {
     display: none;
 }
+.hilight {
+    box-shadow: 0 0 0 8px rgba(13, 148, 136, 0.35);
+}
+.glow {
+    animation: glow-highlight 1s;
+}
+#contact {
+    padding: 1rem;
+}
+#contact:target {
+    animation: glow-highlight 1s ease-in-out infinite;
+    border-radius: 0.5rem;
+}
+
+@keyframes glow-highlight {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(13, 148, 136, 0); }
+    50% { box-shadow: 0 0 0 8px rgba(13, 148, 136, 0.25); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .glow-highlight {
+        animation: none;
+        box-shadow: 0 0 0 8px rgba(13, 148, 136, 0.25);
+    }
+}
+
+svg[class*="svg-inline"][role="img"]{
+    padding-right: 10px;
+}
+
+a[role='button'] {
+    padding: 10px;
+    margin: 5px;
+}
+
+/* Shared component classes, so pages/components reference one name instead of
+   re-listing the same utility combo everywhere. Change the look here, not per-usage. */
+@layer components {
+    .nav-link {
+        @apply text-nav-200 hover:text-white;
+    }
+    .btn-social {
+        @apply flex items-center gap-1.5 rounded-full bg-gray-800 px-3 py-2 text-sm text-white shadow;
+    }
+    .btn-primary {
+        @apply rounded bg-brand-600 px-4 py-2 text-white shadow hover:bg-brand-700;
+    }
+}

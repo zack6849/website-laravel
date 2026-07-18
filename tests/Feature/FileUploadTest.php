@@ -35,4 +35,16 @@ class FileUploadTest extends TestCase
         //assert we have a temporarily signed URl in the response
         $response->assertSeeText("?signature=");
     }
+
+    #[Test]
+    public function malformedUploadReturnsValidationError()
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user, 'api')
+            ->json('PUT', route('file.store'), ['file' => 'not-an-upload']);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['file']);
+    }
 }

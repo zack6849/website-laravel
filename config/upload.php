@@ -6,6 +6,6 @@ return [
         //2 GiB max filesize
         'max_filesize' => env('UPLOAD_MAX_FILESIZE', 2048 * 1024),
         'public_url_prefix' => env('UPLOAD_PREFIX', 'https://files.zcraig.me'),
+        'blocked_extensions' => ['html', 'htm', 'svg', 'js', 'mjs', 'php', 'phtml', 'exe', 'bat', 'cmd', 'sh', 'msi', 'jar'],
     ],
 ];
-?>

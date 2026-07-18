@@ -1,5 +1,18 @@
 <template>
     <div>
+        <div class="flex flex-col gap-2 pb-2 sm:flex-row sm:items-center sm:gap-4">
+            <p class="grow text-gray-500">
+                Every contact I've logged, plotted on a map.
+            </p>
+            <a @click.prevent="toggleHelp" class="btn-primary inline-block self-start font-2xl shrink-0 sm:self-auto">
+                What's This?
+            </a>
+        </div>
+
+        <p v-if="showHelp" class="p-2">
+            One of my hobbies is <a target="_blank" href="https://en.wikipedia.org/wiki/Amateur_radio" class="text-brand-700 underline hover:text-brand-900">Ham Radio</a> and this map shows a little map pin for each radio station I've contacted.
+            You can click each map pin and see comments and details, including the other station's callsign, signal report, timestamp, and any comments
+        </p>
         <div v-show="!this.loaded">
             Please wait, map loading...
         </div>
@@ -35,6 +48,7 @@ export default {
             mapObject: {},
             currentMode: 'SSB',
             currentBand: '20M',
+            showHelp: false,
         }
     },
     mounted() {
@@ -119,9 +133,9 @@ export default {
                     "icon-allow-overlap": true,
                 }
             });
-            map.on('click', 'qsos', function (e) {
+            map.on('click', 'qsos', (e) => {
                 var coordinates = e.features[0].geometry.coordinates.slice();
-                var description = e.features[0].properties.description;
+                var description = this.buildPopupDescription(e.features[0].properties);
                 // Ensure that if the map is zoomed out such that multiple
                 // copies of the feature are visible, the popup appears
                 // over the copy being pointed to.
@@ -134,6 +148,44 @@ export default {
                     .addTo(map);
             });
             this.loadQsos();
+        },
+        escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        },
+        buildPopupDescription(properties) {
+            const mode = this.escapeHtml(properties.mode);
+            const toCallsign = this.escapeHtml(properties.to_callsign);
+            const date = this.escapeHtml(properties.qso_date ?? properties.created_at ?? '');
+            const frequency = this.escapeHtml(properties.frequency);
+            const rstReceived = this.escapeHtml(properties.rst_received);
+            const toGrid = this.escapeHtml(properties.to_grid);
+            const comments = String(properties.comments ?? '').trim();
+
+            let html = '<div>';
+            html += `<div><b>${mode} QSO w/ ${toCallsign}</b></div>`;
+            html += `<div><b>Date: ${date}</b></div>`;
+            html += `<div><b>Frequency: ${frequency}Mhz</b></div>`;
+
+            if (rstReceived !== '') {
+                html += `<div><b>RST Received: ${rstReceived}</b></div>`;
+            }
+            if (toGrid !== '') {
+                html += `<div><b>Grid: ${toGrid}</b></div>`;
+            }
+            if (comments !== '') {
+                html += `<div><b>Comments:</b> ${this.escapeHtml(comments)}</div>`;
+            }
+
+            html += '</div>';
+            return html;
+        },
+        toggleHelp(){
+            this.showHelp = !this.showHelp;
         }
     },
     watch: {

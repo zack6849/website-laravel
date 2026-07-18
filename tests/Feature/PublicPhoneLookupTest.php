@@ -27,7 +27,7 @@ class PublicPhoneLookupTest extends TestCase
         parent::setUp();
         $this->limit = $this->faker->numberBetween(3, 5);
         config([
-            'twilio.public.rate_limit' => $this->limit,
+            'twilio.public_rate_limit' => $this->limit,
         ]);
     }
 
@@ -86,8 +86,8 @@ class PublicPhoneLookupTest extends TestCase
         $user = $user();
         if($user == null){
             config([
-                'twilio.public.rate_limit' => 1,
-                'twilio.public.decay_rate' => 999,
+                'twilio.public_rate_limit' => 1,
+                'twilio.public_decay_rate' => 999,
             ]);
         }else {
             $user->update([
@@ -98,17 +98,14 @@ class PublicPhoneLookupTest extends TestCase
 
         $this->getLivewireInstance(PhoneNumberLookup::class, $user)
             ->assertSet('remainingLookups', 1)
-            ->assertSet('rateLimited', false)
             ->set('phoneNumber', $this->faker->phoneNumber)
             ->call('lookup')
-            ->assertSet('remainingLookups', 0)
-            ->assertSet('rateLimited', true);
+            ->assertSet('remainingLookups', 0);
         $this->travelTo(
             now()->addSeconds(999),
             function () use ($user) {
                 $this->getLivewireInstance(PhoneNumberLookup::class, $user)
                     ->assertSet('remainingLookups', 1)
-                    ->assertSet('rateLimited', false)
                     ->assertSeeText('You have 1 lookups remaining');
             }
         );
@@ -116,18 +113,145 @@ class PublicPhoneLookupTest extends TestCase
 
     #[Test]
     #[DataProvider('userTypeDataProvider')]
-    public function cachedResponsesDontConsumeRateLimit($type, $user = null): void
+    public function clearsThePreviousResultWhenARateLimitedLookupFails($user): void
+    {
+        $this->mockTwilioService();
+
+        $user = $user();
+        if ($user == null) {
+            config([
+                'twilio.public_rate_limit' => 1,
+                'twilio.public_decay_rate' => 999,
+            ]);
+        } else {
+            $user->update([
+                'lookup_limit' => 1,
+                'lookup_decay_rate' => 999,
+            ]);
+        }
+
+        $instance = $this->getLivewireInstance(PhoneNumberLookup::class, $user)
+            ->set('phoneNumber', $this->faker->phoneNumber)
+            ->call('lookup');
+
+        //authenticated (trusted) requests get the full identity-tier summary; anonymous
+        //visitors only ever see the basic carrier/line-type/caller-name card
+        if ($user !== null) {
+            $instance->assertSet('resultSummary', 'This is a test')
+                ->assertSeeText('This is a test');
+        } else {
+            $instance->assertSeeText('Carrier:')
+                ->assertDontSeeText('This is a test');
+        }
+
+        // a second, different (uncached) number should hit the limit and must not leave the
+        // first number's result on screen looking like it belongs to this new attempt
+        $instance->set('phoneNumber', $this->faker->phoneNumber)
+            ->call('lookup')
+            ->assertSet('resultSummary', null)
+            ->assertSet('formattedResult', null)
+            ->assertSet('result', null)
+            ->assertDontSeeText('This is a test');
+    }
+
+    #[Test]
+    #[DataProvider('userTypeDataProvider')]
+    public function stillShowsTheResultOfTheLookupThatHitsTheLimit($user): void
+    {
+        $this->mockTwilioService();
+
+        $user = $user();
+        if ($user == null) {
+            config([
+                'twilio.public_rate_limit' => 1,
+                'twilio.public_decay_rate' => 999,
+            ]);
+        } else {
+            $user->update([
+                'lookup_limit' => 1,
+                'lookup_decay_rate' => 999,
+            ]);
+        }
+
+        $instance = $this->getLivewireInstance(PhoneNumberLookup::class, $user)
+            ->set('phoneNumber', $this->faker->phoneNumber)
+            ->call('lookup')
+            ->assertSet('remainingLookups', 0);
+
+        if ($user !== null) {
+            $instance->assertSet('resultSummary', 'This is a test')
+                ->assertSeeText('This is a test');
+        } else {
+            $instance->assertSeeText('Carrier:');
+        }
+    }
+
+    #[Test]
+    #[DataProvider('userTypeDataProvider')]
+    public function cachedResponsesDontConsumeRateLimit($user = null): void
     {
         $this->mockTwilioService(true);
         $user = $user == null ? null : $user();
         $limit = $user?->lookup_limit ?? $this->limit;
         $this->getLivewireInstance(PhoneNumberLookup::class, $user)
             ->assertSet('remainingLookups', $limit)
-            ->assertSet('rateLimited', false)
             ->set('phoneNumber', $this->faker->phoneNumber)
             ->call('lookup')
-            ->assertSet('remainingLookups', $limit)
-            ->assertSet('rateLimited', false);
+            ->assertSet('remainingLookups', $limit);
+    }
+
+    #[Test]
+    public function anonymousVisitorsNeverSeeIdentityDataEvenWhenTheServiceReturnsIt(): void
+    {
+        $this->partialMock(TwilioService::class, function (MockInterface $mock) {
+            $mock->shouldReceive('lookupNumber')->andReturn(['fake' => 'response']);
+            $mock->shouldReceive('extractData')->andReturn([
+                'possible_owners' => ['Some Caller Name'],
+                'carrier' => 'Verizon',
+                'type' => 'mobile',
+                'country' => 'US',
+                'associated_people' => [],
+                'associated_addresses' => [],
+            ]);
+            $mock->shouldReceive('toSms')->andReturn("Likely Owner: \n - Jane Q Public\nLikely Addresses: \n - 123 Secret St Tampa FL US\n");
+        });
+
+        Livewire::test(PhoneNumberLookup::class)
+            ->set('phoneNumber', $this->faker->phoneNumber)
+            ->call('lookup')
+            ->assertSet('includeIdentityData', false)
+            ->assertSeeText('Verizon')
+            ->assertSeeText('Some Caller Name')
+            ->assertDontSeeText('Jane Q Public')
+            ->assertDontSeeText('123 Secret St');
+    }
+
+    #[Test]
+    public function authenticatedVisitorsSeeTheFullIdentitySummary(): void
+    {
+        $user = User::factory()->create();
+        $this->partialMock(TwilioService::class, function (MockInterface $mock) {
+            $mock->shouldReceive('lookupNumber')->andReturn(['fake' => 'response']);
+            $mock->shouldReceive('extractData')->andReturn([
+                'possible_owners' => ['name' => 'Jane Q Public'],
+                'carrier' => 'Verizon',
+                'type' => 'mobile',
+                'country' => 'US',
+                'associated_people' => [],
+                'associated_addresses' => [
+                    ['street' => '123 Secret St', 'city' => 'Tampa', 'state' => 'FL', 'country' => 'US'],
+                ],
+            ]);
+            $mock->shouldReceive('toSms')->andReturn("Likely Owner: \n - Jane Q Public\nLikely Addresses: \n - 123 Secret St Tampa FL US\n");
+        });
+
+        Livewire::actingAs($user)
+            ->test(PhoneNumberLookup::class)
+            ->set('phoneNumber', $this->faker->phoneNumber)
+            ->call('lookup')
+            ->assertSet('includeIdentityData', true)
+            ->assertSeeText('Jane Q Public')
+            ->assertSeeText('123 Secret St');
     }
 
     /**
@@ -136,7 +260,7 @@ class PublicPhoneLookupTest extends TestCase
      * @param string|null $driver what driver to use when setting the authenticated user
      * @return Testable
      */
-    private function getLivewireInstance(string $class, User $user = null, string $driver = null): Testable
+    private function getLivewireInstance(string $class, ?User $user = null, ?string $driver = null): Testable
     {
         if ($user !== null) {
             return Livewire::actingAs($user, $driver)

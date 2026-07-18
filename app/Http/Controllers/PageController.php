@@ -10,7 +10,20 @@ class PageController extends Controller
 {
     public function home(): Renderable
     {
-        return view('pages.home');
+        $techCategories = collect(config('techstack.categories'))
+            ->map(fn (array $items) => collect($items)->map(function (array $tech) {
+                if (isset($tech['image'])) {
+                    $tech['image'] = asset($tech['image']);
+                }
+
+                return $tech;
+            })->all())
+            ->all();
+
+        return view('pages.home', [
+            'techCategories' => $techCategories,
+            'projects' => config('projects'),
+        ]);
     }
 
     public function photos(): Renderable
@@ -18,8 +31,8 @@ class PageController extends Controller
         return view('pages.photography');
     }
 
-    public function qsos(): Renderable
+    public function radio(): Renderable
     {
-        return view('pages.qsos');
+        return view('pages.radio-contact-map');
     }
 }

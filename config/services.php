@@ -61,12 +61,6 @@ return [
     'discord' => [
         'webhook_uri' => env('DISCORD_WEBHOOK_URI')
     ],
-    'petco' => [
-        'application_id' => 'z1dq4rokCsjt7foJ4C6uMzN4YhSFgsSzbAQlBY2y',
-        'session_token' => env('PETCO_SESSION_TOKEN'),
-        'location' => env('PETCO_LOCATION'),
-        'search_radius' => env('PETCO_SEARCH_RADIUS', 100)
-    ],
     'geoapify' => [
         'key' => env('GEOAPIFY_API_KEY')
     ],

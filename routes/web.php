@@ -18,8 +18,8 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\TwilioController;
 
 Route::get('/', 'PageController@home')->name("home");
-Route::get('/photos', 'PageController@photos')->name('photography');
-Route::get('/qsos', 'PageController@qsos')->name('qsos');
+Route::get('/photos', 'PageController@photos')->name('photos');
+Route::get('/radio', 'PageController@radio')->name('radio');
 
 Auth::routes(['register' => false]);
 
@@ -28,7 +28,7 @@ Route::prefix('/files')->controller(FileController::class)->group(function () {
     Route::middleware(['auth'])->group(function () {
         Route::get('/', 'index')->name("file.index");
         Route::get('/new', 'create')->name("file.create");
-        Route::put('/files', 'store')->name('file.store');
+        Route::put('/', 'store')->name('file.store');
     });
     //filename specific routes
     Route::prefix('/{file:filename}/')->group(function () {
@@ -43,7 +43,7 @@ Route::prefix('/files')->controller(FileController::class)->group(function () {
 
 });
 
-Route::prefix('/lookup')->middleware(['throttle'])->controller(TwilioController::class)->group(function() {
+Route::prefix('/lookup')->controller(TwilioController::class)->group(function() {
     Route::get('/', 'index')->name("phone.lookup.index");
     Route::get('/{phone_number}', 'lookup')->name("phone.lookup");
     Route::get('/{phone_number}/raw', 'rawLookup')->name("phone.lookup.raw");

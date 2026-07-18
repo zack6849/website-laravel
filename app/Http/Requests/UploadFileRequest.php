@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\UploadedFile;
 
 class UploadFileRequest extends FormRequest
 {
@@ -25,7 +26,22 @@ class UploadFileRequest extends FormRequest
     public function rules()
     {
         return [
-            'file' => 'required|file|max:' . config('upload.storage.max_filesize')
+            'file' => [
+                'bail',
+                'required',
+                'file',
+                'max:' . config('upload.storage.max_filesize'),
+                function ($attribute, $value, $fail) {
+                    if (!$value instanceof UploadedFile) {
+                        return;
+                    }
+
+                    $blocked = config('upload.storage.blocked_extensions', []);
+                    if (in_array(strtolower($value->getClientOriginalExtension()), $blocked, true)) {
+                        $fail('This file type is not allowed.');
+                    }
+                },
+            ],
         ];
     }
 }
