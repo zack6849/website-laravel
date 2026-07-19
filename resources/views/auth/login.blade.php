@@ -1,76 +1,74 @@
 @extends('layouts.app')
 @section('title', 'Login')
 @section('content')
-    <div class="container mx-auto h-full">
-        <div class="flex flex-wrap justify-center h-full">
-            <div class="w-full max-w-sm">
-                <div class="flex flex-col break-words bg-white border border-2 rounded shadow-md">
+    <div class="auth-page">
+        <div class="auth-panel">
+            <div class="auth-card">
 
-                    <div class="font-semibold bg-gray-200 text-gray-700 py-3 px-6 mb-0">
-                        {{ __('Login') }}
+                <div class="auth-card-header">
+                    {{ __('Login') }}
+                </div>
+
+                <form class="auth-form" method="POST" action="{{ route('login') }}">
+                    @csrf
+
+                    <div class="auth-field">
+                        <label for="email" class="auth-label">
+                            {{ __('E-Mail Address') }}:
+                        </label>
+
+                        <input id="email" type="email" class="auth-input{{ $errors->has('email') ? ' auth-input-error' : '' }}" name="email" value="{{ old('email') }}" required autofocus>
+
+                        @if ($errors->has('email'))
+                            <p class="auth-error">
+                                {{ $errors->first('email') }}
+                            </p>
+                        @endif
                     </div>
 
-                    <form class="w-full p-6" method="POST" action="{{ route('login') }}">
-                        @csrf
+                    <div class="auth-field">
+                        <label for="password" class="auth-label">
+                            {{ __('Password') }}:
+                        </label>
 
-                        <div class="flex flex-wrap mb-6">
-                            <label for="email" class="block text-gray-700 text-sm font-bold mb-2">
-                                {{ __('E-Mail Address') }}:
-                            </label>
+                        <input id="password" type="password" class="auth-input{{ $errors->has('password') ? ' auth-input-error' : '' }}" name="password" required>
 
-                            <input id="email" type="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline{{ $errors->has('email') ? ' border-red-500' : '' }}" name="email" value="{{ old('email') }}" required autofocus>
+                        @if ($errors->has('password'))
+                            <p class="auth-error">
+                                {{ $errors->first('password') }}
+                            </p>
+                        @endif
+                    </div>
 
-                            @if ($errors->has('email'))
-                                <p class="text-red-500 text-xs italic mt-4">
-                                    {{ $errors->first('email') }}
-                                </p>
-                            @endif
-                        </div>
+                    <div class="auth-checkbox-row">
+                        <input type="checkbox" class="auth-checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
 
-                        <div class="flex flex-wrap mb-6">
-                            <label for="password" class="block text-gray-700 text-sm font-bold mb-2">
-                                {{ __('Password') }}:
-                            </label>
+                        <label class="ml-3 text-sm text-slate-700" for="remember">
+                            {{ __('Remember Me') }}
+                        </label>
+                    </div>
 
-                            <input id="password" type="password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline{{ $errors->has('password') ? ' border-red-500' : '' }}" name="password" required>
+                    <div class="auth-actions">
+                        <button type="submit" class="auth-button">
+                            {{ __('Login') }}
+                        </button>
 
-                            @if ($errors->has('password'))
-                                <p class="text-red-500 text-xs italic mt-4">
-                                    {{ $errors->first('password') }}
-                                </p>
-                            @endif
-                        </div>
+                        @if (Route::has('password.request'))
+                            <a class="auth-link sm:ml-auto" href="{{ route('password.request') }}">
+                                {{ __('Forgot Your Password?') }}
+                            </a>
+                        @endif
 
-                        <div class="flex mb-6">
-                            <input type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
-
-                            <label class="text-sm text-gray-700 ml-3" for="remember">
-                                {{ __('Remember Me') }}
-                            </label>
-                        </div>
-
-                        <div class="flex flex-wrap items-center">
-                            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-gray-100 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                                {{ __('Login') }}
-                            </button>
-
-                            @if (Route::has('password.request'))
-                                <a class="text-sm text-blue-500 hover:text-blue-700 whitespace-no-wrap no-underline ml-auto" href="{{ route('password.request') }}">
-                                    {{ __('Forgot Your Password?') }}
+                        @if (Route::has('register'))
+                            <p class="auth-secondary-text">
+                                Don't have an account?
+                                <a class="auth-link" href="{{ route('register') }}">
+                                    Register
                                 </a>
-                            @endif
-
-                            @if (Route::has('register'))
-                                <p class="w-full text-xs text-center text-gray-700 mt-8 -mb-4">
-                                    Don't have an account?
-                                    <a class="text-blue-500 hover:text-blue-700 no-underline" href="{{ route('register') }}">
-                                        Register
-                                    </a>
-                                </p>
-                            @endif
-                        </div>
-                    </form>
-                </div>
+                            </p>
+                        @endif
+                    </div>
+                </form>
             </div>
         </div>
     </div>

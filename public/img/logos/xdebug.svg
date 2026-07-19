@@ -1,0 +1,8 @@
+<svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <title>Xdebug</title>
+    <path d="M5.25 2.75h4.1L12 6.15l2.65-3.4h4.1v3.4l-4.35 5.6 4.6 6.1v3.4h-4.2L12 17.55l-2.8 3.7H5v-3.35l4.6-6-4.35-5.75v-3.4Z" fill="#317E1E"/>
+    <path d="M6.45 5.25 11 11.3m1.95-2.55 3.9-4.8M6.85 19.6l4.35-5.25m2 1.25 3.95 4.55" fill="none" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.35"/>
+    <circle cx="6.45" cy="5.25" r="1.05" fill="#FFFFFF"/>
+    <circle cx="16.85" cy="3.95" r="1.05" fill="#FFFFFF"/>
+    <circle cx="17.15" cy="20.15" r="1.05" fill="#FFFFFF"/>
+</svg>

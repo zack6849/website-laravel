@@ -14,6 +14,10 @@ return [
     |
     */
 
+    'ga' => [
+        'property_id' => env('GOOGLE_ANALYTICS_PROPERTY_ID', '')
+    ],
+
     'mailgun' => [
         'domain' => env('MAILGUN_DOMAIN'),
         'secret' => env('MAILGUN_SECRET'),

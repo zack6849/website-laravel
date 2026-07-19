@@ -1,28 +1,46 @@
 <template>
     <article
-        class="flex flex-col rounded border bg-white p-4"
-        :class="[project.featured ? 'border-brand-300 shadow-sm md:p-5' : 'border-gray-200', {hilight: project.glow === true}]"
+        class="group flex flex-col rounded border transition"
+        :class="[cardClasses, {hilight: project.glow === true}]"
     >
         <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-            <h3 class="wrap-break-word font-medium text-gray-900" :class="project.featured ? 'text-2xl' : 'text-xl'">{{ project.name }}</h3>
+            <h5 class="wrap-break-word flex min-w-0 items-center gap-2 font-medium transition-colors" :class="titleClasses">
+                <span
+                    v-if="isStackedProjectIcon"
+                    class="fa-stack shrink-0 text-sm"
+                    :class="iconToneClasses"
+                    aria-hidden="true"
+                >
+                    <i
+                        v-for="(icon, index) in projectIcons"
+                        :key="`${project.name}-icon-${index}`"
+                        :class="stackIconClasses(icon, index)"
+                    ></i>
+                </span>
+                <i
+                    v-else-if="hasProjectIcon"
+                    :class="[projectIcons[0], iconToneClasses]"
+                    class="shrink-0 text-sm"
+                    aria-hidden="true"
+                ></i>
+                <span class="min-w-0">{{ project.name }}</span>
+            </h5>
             <div class="flex shrink-0 flex-wrap items-center justify-end gap-2">
                 <span v-if="project.status" class="self-start rounded-full px-2 py-0.5 text-xs font-medium" :class="statusBadgeClasses(project.status)">
                     {{ project.status }}
-                </span>
-                <span v-if="project.industry" class="self-start rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
-                    {{ project.industry }}
                 </span>
             </div>
         </div>
         <p v-if="project.note" class="mt-1 text-xs text-gray-400">{{ project.note }}</p>
 
-        <p class="mt-3 text-sm text-gray-600">{{ project.description }}</p>
+        <p class="mt-3 text-sm leading-relaxed transition-colors" :class="descriptionClasses">{{ project.description }}</p>
 
         <div v-if="project.tech?.length" class="mt-3 flex flex-wrap gap-1.5">
             <span
-                v-for="tag in project.tech"
+                v-for="tag in visibleTech"
                 :key="tag"
-                class="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600"
+                class="rounded border px-2 py-0.5 text-xs transition-colors"
+                :class="tagClasses"
             >
                 {{ tag }}
             </span>
@@ -51,9 +69,78 @@ export default {
             required: true,
         },
     },
+    computed: {
+        isArchived() {
+            return this.project.status === 'Archived';
+        },
+        cardClasses() {
+            if (this.isArchived) {
+                return 'border-slate-100 bg-slate-50/50 p-4 opacity-70 hover:border-slate-300 hover:bg-white hover:opacity-100 md:p-5';
+            }
+
+            return [
+                'border-slate-200 bg-white p-5 md:p-6',
+                this.project.links?.length ? 'hover:border-brand-300 hover:shadow-sm' : '',
+            ];
+        },
+        titleClasses() {
+            return this.isArchived ? 'text-lg text-slate-500 group-hover:text-slate-800' : 'text-xl text-gray-900';
+        },
+        descriptionClasses() {
+            return this.isArchived ? 'text-slate-400 group-hover:text-gray-600' : 'text-gray-600';
+        },
+        tagClasses() {
+            return this.isArchived
+                ? 'border-slate-100 bg-white/70 text-slate-400 group-hover:border-slate-200 group-hover:bg-slate-50 group-hover:text-slate-500'
+                : 'border-slate-200 bg-slate-50 text-slate-500';
+        },
+        visibleTech() {
+            return (this.project.tech ?? []).slice(0, 5);
+        },
+        rawProjectIcon() {
+            return this.project.icon ?? this.project.icons ?? null;
+        },
+        projectIcons() {
+            const icons = Array.isArray(this.rawProjectIcon)
+                ? this.rawProjectIcon
+                : [this.rawProjectIcon];
+
+            return icons.filter((icon) => typeof icon === 'string' && icon.trim().length > 0);
+        },
+        hasProjectIcon() {
+            return this.projectIcons.length > 0;
+        },
+        isStackedProjectIcon() {
+            return Array.isArray(this.rawProjectIcon) && this.hasProjectIcon;
+        },
+        iconToneClasses() {
+            const classesByTone = {
+                radio: 'text-emerald-600',
+                prize: 'text-purple-600',
+                infrastructure: 'text-sky-600',
+                marketplace: 'text-indigo-600',
+                monitoring: 'text-amber-500',
+                reporting: 'text-blue-600',
+                modernization: 'text-slate-500',
+                commerce: 'text-rose-600',
+            };
+
+            return classesByTone[this.project.tone] ?? (this.isArchived ? 'text-slate-400' : 'text-brand-600');
+        },
+    },
     methods: {
         isExternal(url) {
             return /^https?:\/\//.test(url);
+        },
+        stackIconClasses(icon, index) {
+            if (/\bfa-stack-\dx\b/.test(icon)) {
+                return icon;
+            }
+
+            return [
+                icon,
+                index === 0 ? 'fa-stack-2x' : 'fa-stack-1x',
+            ];
         },
         statusBadgeClasses(status) {
             const classesByStatus = {
@@ -61,6 +148,7 @@ export default {
                 Active: 'bg-teal-100 text-teal-700',
                 Private: 'bg-gray-100 text-gray-500',
                 Retired: 'bg-gray-100 text-gray-500',
+                Archived: 'bg-white text-slate-400 ring-1 ring-slate-200 group-hover:text-slate-500',
             };
             return classesByStatus[status] ?? 'bg-gray-100 text-gray-500';
         },
