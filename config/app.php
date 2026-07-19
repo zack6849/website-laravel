@@ -17,7 +17,7 @@ return [
 
     'site_name' => env('APP_SITE_NAME', env('APP_NAME', 'Laravel')),
 
-    'contact_email' => env('APP_CONTACT_EMAIL', 'admin@example.com'),
+    'contact_email' => env('APP_CONTACT_EMAIL', 'zack@zcraig.me'),
 
     /*
     |--------------------------------------------------------------------------

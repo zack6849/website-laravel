@@ -1,21 +1,22 @@
 const contactHash = '#contact';
 const highlightClass = 'contact-highlight';
-const highlightDurationMs = 1200;
 
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const contactUrl = () => `${window.location.pathname}${window.location.search}${contactHash}`;
 
 const highlightContact = (contact) => {
-    if (contact.classList.contains(highlightClass)) {
-        return;
+    if (!contact.classList.contains(highlightClass)) {
+        contact.classList.add(highlightClass);
     }
+};
 
-    contact.classList.add(highlightClass);
+const focusContactHeading = (contact) => {
+    const heading = contact.querySelector('#contact-heading');
 
-    const clearHighlight = () => contact.classList.remove(highlightClass);
-    contact.addEventListener('animationend', clearHighlight, { once: true });
-    window.setTimeout(clearHighlight, highlightDurationMs);
+    if (heading) {
+        heading.focus({ preventScroll: true });
+    }
 };
 
 const showContactOverview = (contact, { updateHash = true, behavior = 'smooth' } = {}) => {
@@ -23,12 +24,13 @@ const showContactOverview = (contact, { updateHash = true, behavior = 'smooth' }
         window.history.pushState(null, '', contactUrl());
     }
 
-    window.scrollTo({
-        top: 0,
+    contact.scrollIntoView({
         behavior: prefersReducedMotion() ? 'auto' : behavior,
+        block: 'start',
     });
 
     highlightContact(contact);
+    window.setTimeout(() => focusContactHeading(contact), prefersReducedMotion() ? 0 : 300);
 };
 
 document.addEventListener('DOMContentLoaded', () => {

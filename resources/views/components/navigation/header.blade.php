@@ -1,4 +1,4 @@
-<nav class="mb-6 bg-nav-950 px-4 py-4 sm:px-6 lg:px-8">
+<nav class="bg-nav-950 px-4 py-4 sm:px-6 lg:px-8">
     <div class="mx-auto w-full max-w-screen-2xl">
         <div class="flex items-center justify-between flex-wrap">
             <div class="mr-6 flex shrink-0 items-center text-white">

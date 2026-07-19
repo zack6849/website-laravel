@@ -1,12 +1,13 @@
 <template>
     <div class="space-y-4">
+        <h4 class="text-sm font-semibold uppercase tracking-wide text-gray-500">{{ title }}</h4>
         <project-card
             v-for="(project, index) in featured"
             :key="`${category}-featured-${project.name}-${index}`"
             :project="project"
         />
         <template v-if="rest.length">
-            <div v-show="showAll" class="space-y-4">
+            <div :id="restId" v-show="showAll" class="space-y-4">
                 <project-card
                     v-for="(project, index) in rest"
                     :key="`${category}-rest-${project.name}-${index}`"
@@ -16,14 +17,12 @@
             <button
                 type="button"
                 @click="showAll = !showAll"
-                class="w-full rounded border border-dashed border-gray-300 py-2 text-sm text-gray-500 hover:border-gray-400 hover:text-gray-700"
+                class="inline-flex min-h-11 items-center gap-2 rounded-sm px-1 text-sm font-medium text-brand-700 hover:text-brand-900 focus:outline-none focus:ring-2 focus:ring-brand-200"
+                :aria-expanded="showAll.toString()"
+                :aria-controls="restId"
             >
-                <template v-if="showAll">
-                    Show fewer {{ category }} projects <i class="fas fa-chevron-up text-xs"></i>
-                </template>
-                <template v-else>
-                    Show {{ rest.length }} more {{ category }} project{{ rest.length === 1 ? '' : 's' }} <i class="fas fa-chevron-down text-xs"></i>
-                </template>
+                <span>{{ disclosureLabel }}</span>
+                <i class="fas fa-chevron-down text-xs transition-transform" :class="{ 'rotate-180': showAll }"></i>
             </button>
         </template>
     </div>
@@ -41,6 +40,14 @@ export default {
             type: Array,
             required: true,
         },
+        title: {
+            type: String,
+            required: true,
+        },
+        moreLabel: {
+            type: String,
+            default: null,
+        },
     },
     data() {
         return {
@@ -49,10 +56,25 @@ export default {
     },
     computed: {
         featured() {
-            return this.projects.filter((project) => project.featured);
+            return this.projects.filter((project) => project.featured).slice(0, 2);
         },
         rest() {
-            return this.projects.filter((project) => !project.featured);
+            return this.projects.filter((project) => !this.featured.includes(project));
+        },
+        disclosureLabel() {
+            if (this.showAll) {
+                return 'Show less';
+            }
+
+            return `${this.rest.length} more ${this.disclosureNoun}`;
+        },
+        disclosureNoun() {
+            const noun = this.moreLabel ?? `${this.category} project`;
+
+            return this.rest.length === 1 ? noun : `${noun}s`;
+        },
+        restId() {
+            return `${this.category.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-more-projects`;
         },
     },
 };

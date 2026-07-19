@@ -24,7 +24,7 @@
     <div id="header">
         <x-navigation.header/>
     </div>
-    <div id="content" class="mx-auto w-full max-w-screen-2xl px-4 sm:px-6 lg:px-8">
+    <div id="content" class="mx-auto w-full px-4 sm:px-6 lg:px-8">
         @yield('content')
     </div>
     <div id="footer">
@@ -34,5 +34,14 @@
 @livewireScripts
 @vite('resources/js/app.js')
 @stack('scripts')
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id={{config('services.ga.property_id')}}"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', '{{config('services.ga.property_id')}}');
+</script>
 </body>
 </html>

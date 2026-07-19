@@ -4,25 +4,35 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Services\HomeBackgroundService;
 use Illuminate\Contracts\Support\Renderable;
 
 class PageController extends Controller
 {
+    public function __construct(
+        private readonly HomeBackgroundService $homeBackgroundService,
+    ) {
+    }
+
     public function home(): Renderable
     {
-        $techCategories = collect(config('techstack.categories'))
-            ->map(fn (array $items) => collect($items)->map(function (array $tech) {
-                if (isset($tech['image'])) {
-                    $tech['image'] = asset($tech['image']);
-                }
+        $normalizeTechImages = function (array $tech) {
+            if (isset($tech['image'])) {
+                $tech['image'] = asset($tech['image']);
+            }
 
-                return $tech;
-            })->all())
+            return $tech;
+        };
+
+        $techCategories = collect(config('techstack.categories'))
+            ->map(fn (array $items) => collect($items)->map($normalizeTechImages)->all())
             ->all();
 
         return view('pages.home', [
             'techCategories' => $techCategories,
+            'exploringTech' => collect(config('techstack.exploring', []))->map($normalizeTechImages)->all(),
             'projects' => config('projects'),
+            'background' => $this->homeBackgroundService->calculateCurrentBackgroundInfo(),
         ]);
     }
 
