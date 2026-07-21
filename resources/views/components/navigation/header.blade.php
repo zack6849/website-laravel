@@ -24,7 +24,7 @@
                                 Who's Calling Me?
                             </a>
                             <a href="{{route('radio')}}" class="block py-1 lg:py-2 lg:px-4 nav-link lg:text-gray-700 lg:hover:bg-gray-100 lg:hover:text-gray-900">
-                                Radio Map
+                                Logbook
                             </a>
                         </div>
                     </div>
