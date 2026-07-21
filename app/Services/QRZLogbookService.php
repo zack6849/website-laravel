@@ -24,7 +24,7 @@ class QRZLogbookService
 
     public function getLogbookEntries()
     {
-        $response = Http::asForm()->post($this->baseUrl . '/api', [
+        $response = Http::asForm()->timeout(15)->connectTimeout(5)->post($this->baseUrl . '/api', [
             'KEY' => $this->token,
             'ACTION' => 'FETCH'
         ]);

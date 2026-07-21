@@ -6,7 +6,7 @@
         <div class="order-1 lg:order-2">
             <h1 class="font-light text-4xl sm:text-5xl">My Photos.</h1>
             <p>
-                Once in a blue moon I enjoy going out and taking photos, here's a few of them from my <a target="_blank" href="https://www.flickr.com/photos/zack6849/">flickr page</a>
+                Once in a blue moon I enjoy going out and taking photos, here's a few of them from my <a target="_blank" rel="noopener noreferrer" href="https://www.flickr.com/photos/zack6849/">flickr page</a>
             </p>
         </div>
     </div>

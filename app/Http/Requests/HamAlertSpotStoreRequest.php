@@ -25,13 +25,13 @@ class HamAlertSpotStoreRequest extends FormRequest
     public function rules()
     {
         return [
-            'callsign' => 'required|string',
-            'frequency' => 'required|string',
-            'band' => 'required|string',
-            'modeDetail' => 'required|string',
-            'time' => 'required|string',
-            'spotterEntity' => 'required|string',
-            'spotter' => 'required|string'
+            'callsign' => ['required', 'string', 'max:32'],
+            'frequency' => ['required', 'string', 'max:32'],
+            'band' => ['required', 'string', 'max:32'],
+            'modeDetail' => ['required', 'string', 'max:64'],
+            'time' => ['required', 'date'],
+            'spotterEntity' => ['required', 'string', 'max:128'],
+            'spotter' => ['required', 'string', 'max:32'],
         ];
     }
 }

@@ -18,6 +18,7 @@ use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 use Tests\Traits\ServiceTest;
+use Throwable;
 
 class FileUploadServiceTest extends TestCase
 {
@@ -50,6 +51,15 @@ class FileUploadServiceTest extends TestCase
     }
 
     #[Test]
+    public function generatedFilenamesNormalizeTheOriginalExtension(): void
+    {
+        $file = UploadedFile::fake()->image('filename.JPG');
+        $result = $this->service->getFilename($file);
+
+        $this->assertStringEndsWith('.jpg', $result);
+    }
+
+    #[Test]
     public function createsFileOnDisk(): void
     {
         $file = UploadedFile::fake()->image('filename.jpg');
@@ -59,6 +69,17 @@ class FileUploadServiceTest extends TestCase
         $createdFile = $this->service->storeUploadedFile($file, $user);
         $this->disk->assertExists($createdFile->file_location);
         $this->assertNotEmpty($user->refresh()->files);
+    }
+
+    #[Test]
+    public function deletesStoredUploadWhenDatabaseSaveFails(): void
+    {
+        try {
+            $this->service->storeUploadedFile(UploadedFile::fake()->image('filename.jpg'), new User());
+            $this->fail('Expected the database save to fail for an unsaved user.');
+        } catch (Throwable) {
+            $this->assertSame([], $this->disk->allFiles(config('upload.storage.path')));
+        }
     }
 
     #[Test]

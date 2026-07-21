@@ -1,4 +1,5 @@
 {
+    "name": "website-laravel",
     "private": true,
     "scripts": {
         "dev": "vite",

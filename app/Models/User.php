@@ -62,7 +62,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'lookup_limit', 'lookup_decay_rate', 'horizon_access'
+        'name', 'email', 'password', 'api_token', 'lookup_limit', 'lookup_decay_rate', 'horizon_access', 'is_admin'
     ];
 
     /**
@@ -80,9 +80,30 @@ class User extends Authenticatable
 
     protected $casts = [
         'horizon_access' => 'boolean',
+        'is_admin' => 'boolean',
     ];
 
     public function files(){
         return $this->hasMany(File::class);
+    }
+
+    public function setApiTokenAttribute(?string $value): void
+    {
+        $this->attributes['api_token'] = $value === null ? null : self::hashApiToken($value);
+    }
+
+    public static function hashApiToken(string $value): string
+    {
+        return self::isHashedApiToken($value) ? strtolower($value) : hash('sha256', $value);
+    }
+
+    public static function isHashedApiToken(string $value): bool
+    {
+        return preg_match('/\A[0-9a-f]{64}\z/i', $value) === 1;
+    }
+
+    public function isAdmin(): bool
+    {
+        return (bool) $this->is_admin;
     }
 }

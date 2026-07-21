@@ -42,6 +42,10 @@ class Handler extends ExceptionHandler
     public function register(): void
     {
         $this->reportable(function (Throwable $e) {
+            if (! app()->environment('production')) {
+                return;
+            }
+
             Integration::captureUnhandledException($e);
         });
     }

@@ -18,10 +18,13 @@ class CDNService
         if ($token == null) {
             $token = config('services.digitalocean.key');
         }
-        $this->client = Http::baseUrl(static::BASE_URL)->withHeaders([
-            'Authorization' => "Bearer $token",
-            'Accept' => 'application/json',
-        ]);
+        $this->client = Http::baseUrl(static::BASE_URL)
+            ->timeout(10)
+            ->connectTimeout(3)
+            ->withHeaders([
+                'Authorization' => "Bearer $token",
+                'Accept' => 'application/json',
+            ]);
     }
 
     /**

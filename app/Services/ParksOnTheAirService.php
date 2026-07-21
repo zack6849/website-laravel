@@ -21,10 +21,14 @@ class ParksOnTheAirService extends ServiceProvider
 
     private function buildRequest(): PendingRequest
     {
-        return Http::baseUrl($this->baseUrl)->acceptJson()->withHeaders([
-            'Referer' => 'https://pota.app',
-            'User-Agent' => 'Logbook Map (zcraig.me/qsos)'
-        ]);
+        return Http::baseUrl($this->baseUrl)
+            ->acceptJson()
+            ->timeout(10)
+            ->connectTimeout(3)
+            ->withHeaders([
+                'Referer' => 'https://pota.app',
+                'User-Agent' => 'Logbook Map (zcraig.me/qsos)'
+            ]);
     }
 
     /**

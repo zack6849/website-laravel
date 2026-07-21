@@ -35,7 +35,6 @@
         "league/flysystem-aws-s3-v3": "^3.23",
         "livewire/livewire": "^3.4",
         "predis/predis": "^2.3",
-        "rappasoft/laravel-livewire-tables": "^3.5",
         "sentry/sentry-laravel": "^4.10",
         "symfony/http-client": "^7.2",
         "symfony/mailgun-mailer": "^7.2",
@@ -61,7 +60,9 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": []
+            "dont-discover": [
+                "sentry/sentry-laravel"
+            ]
         }
     },
     "autoload": {

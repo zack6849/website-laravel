@@ -16,12 +16,26 @@ declare(strict_types=1);
 
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\TwilioController;
+use App\Http\Controllers\AdminBackgroundController;
+use App\Http\Controllers\AdminLogbookController;
 
 Route::get('/', 'PageController@home')->name("home");
 Route::get('/photos', 'PageController@photos')->name('photos');
 Route::get('/radio', 'PageController@radio')->name('radio');
 
 Auth::routes(['register' => false]);
+
+Route::prefix('/admin')->middleware(['auth', 'admin'])->group(function () {
+    Route::controller(AdminLogbookController::class)->prefix('/logbook')->group(function () {
+        Route::get('/', 'index')->name('admin.logbook.index');
+    });
+
+    Route::controller(AdminBackgroundController::class)->prefix('/backgrounds')->group(function () {
+        Route::get('/', 'index')->name('admin.backgrounds.index');
+        Route::get('/create', 'create')->name('admin.backgrounds.create');
+        Route::get('/{background}/edit', 'edit')->name('admin.backgrounds.edit');
+    });
+});
 
 Route::prefix('/files')->controller(FileController::class)->group(function () {
     //protected file routes
@@ -51,6 +65,5 @@ Route::prefix('/lookup')->controller(TwilioController::class)->group(function() 
 
 //Redirects for files to new URl format
 Route::get('/uploads/{file:filename}', function(\App\Models\File $file){
-    return redirect($file->url, 301)->name('file.old.redirect');
-});
-
+    return redirect($file->url, 301);
+})->name('file.old.redirect');

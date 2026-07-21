@@ -63,9 +63,11 @@ class File extends Model
 
     public function scopeSearch(Builder $builder, $search): Builder
     {
-        return $builder->where('filename', 'like', "%$search%")
-            ->orWhere('original_filename', 'like', "%$search%")
-            ->orWhere('mime', 'like', "%$search%");
+        return $builder->where(function (Builder $query) use ($search): void {
+            $query->where('filename', 'like', "%$search%")
+                ->orWhere('original_filename', 'like', "%$search%")
+                ->orWhere('mime', 'like', "%$search%");
+        });
     }
 
     public function scopeForUser(Builder $builder, $user): Builder

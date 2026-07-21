@@ -3,38 +3,35 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\LogbookEntryResource;
-use App\Models\LogbookEntry;
-use GeoJson\Feature\Feature;
-use GeoJson\Geometry\Point;
+use App\Services\Logbook\LogbookGeoJsonService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
 class LogbookController extends Controller
 {
-    public function getGeoJSON($band = '20m', $mode = 'SSB'): array
-    {
-        $features = [];
-        LogbookEntry::where('band', $band)
-            ->with(['station', 'callee'])
-            ->where('mode', $mode)->get()->each(function (LogbookEntry $entry) use (&$features) {
-                $location = new Point([floatval($entry->to_longitude), floatval($entry->to_latitude)]);
-                $resource = new LogbookEntryResource($entry);
-                $features[] = new Feature($location, $resource->toArray(request()));
+    public function __construct(
+        private readonly LogbookGeoJsonService $geoJsonService,
+    ) {
+    }
 
-            });
-        return [
-            'type' => 'FeatureCollection',
-            'features' => $features
-        ];
+    public function getGeoJSON(Request $request, $band = '20M', $mode = 'SSB'): array
+    {
+        return $this->geoJsonService->getGeoJSON(
+            band: (string) $request->query('band', $band),
+            mode: (string) $request->query('mode', $mode),
+            search: trim((string) $request->query('search', '')),
+            limit: (int) $request->query('limit', LogbookGeoJsonService::DEFAULT_LIMIT),
+            sort: (string) $request->query('sort', LogbookGeoJsonService::DEFAULT_SORT),
+        );
     }
 
     public function getWorkedModes(): Collection
     {
-        return LogbookEntry::select('mode')->distinct()->get()->pluck('mode');
+        return $this->geoJsonService->getWorkedModes();
     }
 
     public function getWorkedBands(): Collection
     {
-        return LogbookEntry::select('band')->distinct()->get()->pluck('band');
+        return $this->geoJsonService->getWorkedBands();
     }
 }

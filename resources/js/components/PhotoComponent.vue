@@ -38,7 +38,11 @@ export default {
     methods: {
         openFlickr() {
             const url = `https://www.flickr.com/photos/${this.info.owner}/${this.info.id}`;
-            window.open(url);
+            const opened = window.open(url, '_blank', 'noopener,noreferrer');
+
+            if (opened) {
+                opened.opener = null;
+            }
         }
     }
 }

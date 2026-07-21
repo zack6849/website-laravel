@@ -47,7 +47,7 @@ return [
         'professional' => [
             [
                 'name' => 'Marketplace Platform Engineering',
-                'description' => 'Backend-focused full-stack work on a mature Laravel platform serving web and mobile clients. I contribute across APIs, background jobs, and web surfaces, with much of the harder work involving compatibility, edge cases, and staged rollouts. My work ranges from multi-quarter product changes to smaller fixes that need to move quickly without breaking existing clients.',
+                'description' => 'Backend-focused full-stack work on a mature marketplace platform serving web and mobile clients. I contribute across APIs, background processing, data modeling, and client-facing experiences, and have owned multi-quarter initiatives requiring cross-team coordination, backward compatibility, staged rollouts, and performance improvements.',
                 'tech' => ['Laravel', 'PHP', 'Vue.js', 'REST APIs', 'AWS', 'Kubernetes'],
                 'tone' => 'marketplace',
                 'icon' => [
