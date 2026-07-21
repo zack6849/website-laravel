@@ -31,7 +31,7 @@ return [
     | users are actually retrieved out of your database or other storage
     | mechanisms used by this application to persist your user's data.
     |
-    | Supported: "session", "token"
+    | Supported: "session", "token", "legacy-compatible-token"
     |
     */
 
@@ -42,9 +42,9 @@ return [
         ],
 
         'api' => [
-            'driver' => 'token',
+            'driver' => 'legacy-compatible-token',
             'provider' => 'users',
-            'hash' => false,
+            'hash' => true,
         ],
     ],
 

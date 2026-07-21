@@ -40,7 +40,8 @@ class UserFactory extends Factory
     {
         return $this->state(function (array $attributes) {
             return [
-                'is_admin' => 'horizon_access',
+                'horizon_access' => true,
+                'is_admin' => true,
             ];
         });
     }

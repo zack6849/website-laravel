@@ -4,7 +4,10 @@ namespace App\Jobs;
 
 use App\Models\Callsign;
 use App\Models\LogbookEntry;
+use App\Models\LogbookEntryVisibilityOverride;
 use App\Models\POTAPark;
+use App\Services\LogbookEntryIdentity;
+use App\Services\Logbook\LogbookCache;
 use App\Services\ParksOnTheAirService;
 use App\Services\QRZLogbookService;
 use Illuminate\Bus\Queueable;
@@ -14,7 +17,6 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class QRZLogbookImport implements ShouldQueue
@@ -23,6 +25,7 @@ class QRZLogbookImport implements ShouldQueue
 
     private QRZLogbookService $logbookService;
     private ParksOnTheAirService $potaService;
+    private LogbookEntryIdentity $entryIdentity;
 
     /**
      * Create a new job instance.
@@ -40,14 +43,15 @@ class QRZLogbookImport implements ShouldQueue
      */
     public function handle(
         QRZLogbookService             $logbookProvider,
-        ParksOnTheAirService          $parksOnTheAirServiceProvider
+        ParksOnTheAirService          $parksOnTheAirServiceProvider,
+        LogbookEntryIdentity          $entryIdentity,
+        LogbookCache                  $logbookCache,
     )
     {
         $this->logbookService = $logbookProvider;
         $this->potaService = $parksOnTheAirServiceProvider;
-        //cache the logbook for slightly under a day, so a same-time daily run never
-        //finds yesterday's cache entry still valid due to run-time drift
-        $records = Cache::remember('logbook', now()->addHours(23), function() {
+        $this->entryIdentity = $entryIdentity;
+        $records = $logbookCache->rememberEntries(function() {
           return $this->logbookService->getLogbookEntries();
         });
         //make sure we don't clobber the db if we don't get any records back
@@ -57,11 +61,13 @@ class QRZLogbookImport implements ShouldQueue
             //don't happen while DB locks are held (saveRecord()'s getParkInfo() calls below
             //hit the now-warm pota_parks table instead of the network)
             $this->warmParkCache($records);
-            DB::transaction(function () use ($records) {
+            DB::transaction(function () use ($records, $logbookCache) {
                 LogbookEntry::query()->whereNotNull('created_at')->delete();
                 foreach ($records as $record) {
                     $this->saveRecord($record);
                 }
+
+                $logbookCache->recordImportCompleted();
             });
         }
 
@@ -105,9 +111,16 @@ class QRZLogbookImport implements ShouldQueue
         $park = $this->getRelatedPark($record);
         $grid = $this->getGridSquare($record, $park);
         list($theirLat, $theirLon) = $this->getLatLong($record, $park);
+        $qrzLogId = $this->qrzLogId($record);
+        $entryKey = $this->entryIdentity->forRecord($record);
         $entry = LogbookEntry::make([
+            'qrz_logid' => $qrzLogId,
+            'entry_key' => $entryKey,
             'from_callsign' => $myCall->id,
             'to_callsign' => $theirCall->id,
+            'to_city' => $this->optionalString(Arr::get($record, 'QTH')),
+            'to_state' => $this->optionalString(Arr::get($record, 'STATE')),
+            'to_county' => $this->optionalString(Arr::get($record, 'CNTY')),
             'frequency' => Arr::get($record, 'FREQ'),
             'band' => strtoupper(Arr::get($record, 'BAND')),
             'mode' => strtoupper(Arr::get($record, 'MODE')),
@@ -130,7 +143,50 @@ class QRZLogbookImport implements ShouldQueue
             $entry->park_id = $park->id;
             $entry->category = "POTA";
         }
+        $this->applyVisibilityOverride($entry);
         $entry->save();
+    }
+
+    private function applyVisibilityOverride(LogbookEntry $entry): void
+    {
+        $override = null;
+
+        if ($entry->qrz_logid !== null) {
+            $override = LogbookEntryVisibilityOverride::query()
+                ->where('qrz_logid', $entry->qrz_logid)
+                ->first();
+        }
+
+        $override ??= LogbookEntryVisibilityOverride::query()
+            ->where('entry_key', $entry->entry_key)
+            ->first();
+
+        if ($override !== null) {
+            $entry->hidden_from_public = $override->hidden_from_public;
+        }
+    }
+
+    private function qrzLogId(array $record): ?string
+    {
+        $logId = Arr::get($record, 'APP_QRZLOG_LOGID')
+            ?? Arr::get($record, 'app_qrzlog_logid');
+
+        if ($logId === null || trim((string) $logId) === '') {
+            return null;
+        }
+
+        return trim((string) $logId);
+    }
+
+    private function optionalString(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $value = trim((string) $value);
+
+        return $value === '' ? null : $value;
     }
 
     public function transformCoordinates($coordinates): string

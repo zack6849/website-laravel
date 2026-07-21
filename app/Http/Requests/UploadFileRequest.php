@@ -36,6 +36,10 @@ class UploadFileRequest extends FormRequest
                         return;
                     }
 
+                    if (strlen($value->getClientOriginalName()) > 255) {
+                        $fail('The original filename may not be greater than 255 characters.');
+                    }
+
                     $blocked = config('upload.storage.blocked_extensions', []);
                     if (in_array(strtolower($value->getClientOriginalExtension()), $blocked, true)) {
                         $fail('This file type is not allowed.');

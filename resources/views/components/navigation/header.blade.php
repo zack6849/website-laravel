@@ -37,6 +37,14 @@
                         <a href="{{route('file.index')}}" class="block lg:inline-block lg:mt-0 nav-link mr-4">
                             My Files
                         </a>
+                        @can('access-admin')
+                            <a href="{{route('admin.logbook.index')}}" class="block lg:inline-block lg:mt-0 nav-link mr-4">
+                                Logbook
+                            </a>
+                            <a href="{{route('admin.backgrounds.index')}}" class="block lg:inline-block lg:mt-0 nav-link mr-4">
+                                Backgrounds
+                            </a>
+                        @endcan
                         <form class="block lg:inline-block" action="{{route('logout')}}" method="POST">
                             {{csrf_field()}}
                             <button type="submit" class="lg:mt-0 nav-link mr-4">

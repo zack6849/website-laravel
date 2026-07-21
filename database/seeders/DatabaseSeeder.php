@@ -21,10 +21,12 @@ class DatabaseSeeder extends Seeder
         $user->password = Hash::make("password");
         $user->email = "zack@zcraig.me";
         $user->horizon_access = true;
+        $user->is_admin = true;
         $user->save();
 
         $this->call(ITURegionSeeder::class);
         $this->call(DXCCEntitySeeder::class);
+        $this->call(BackgroundSeeder::class);
 
     }
 }

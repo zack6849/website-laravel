@@ -40,8 +40,12 @@ class FileUploadTest extends TestCase
         ]);
         $expectedUrl = route('file.show', ['file' => $latestFile->filename]);
         $response->assertJsonFragment(['view_url' => $expectedUrl]);
-        //assert we have a temporarily signed URl in the response
-        $response->assertSeeText("?signature=");
+
+        $deleteUrl = $response->json('data.delete_url');
+        parse_str(parse_url($deleteUrl, PHP_URL_QUERY), $query);
+
+        $this->assertArrayHasKey('signature', $query);
+        $this->assertArrayNotHasKey('expires', $query);
     }
 
     #[Test]
@@ -52,5 +56,42 @@ class FileUploadTest extends TestCase
 
         $response->assertStatus(422);
         $response->assertJsonValidationErrors(['file']);
+    }
+
+    #[Test]
+    public function riskyExtensionsAreRejected(): void
+    {
+        $file = UploadedFile::fake()->create('payload.php', 1, 'application/x-php');
+
+        $response = $this->actingAs($this->user, 'api')
+            ->json('PUT', route('file.store'), compact('file'));
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['file']);
+    }
+
+    #[Test]
+    public function longOriginalFilenamesAreRejectedBeforeStorage(): void
+    {
+        $file = UploadedFile::fake()->image(str_repeat('a', 252) . '.jpg');
+
+        $response = $this->actingAs($this->user, 'api')
+            ->json('PUT', route('file.store'), compact('file'));
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['file']);
+        $this->assertSame([], Storage::disk(config('upload.storage.disk'))->allFiles(config('upload.storage.path')));
+    }
+
+    #[Test]
+    public function statusFlashMessagesAreEscaped(): void
+    {
+        $response = $this->actingAs($this->user)
+            ->withSession(['status' => '<script>alert("xss")</script>'])
+            ->get(route('file.index'));
+
+        $response->assertOk();
+        $response->assertSee('&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;', false);
+        $response->assertDontSee('<script>alert("xss")</script>', false);
     }
 }

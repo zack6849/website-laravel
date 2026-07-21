@@ -15,8 +15,13 @@ use Illuminate\Support\Carbon;
  * App\Models\LogbookEntry
  *
  * @property int $id
+ * @property string|null $qrz_logid
+ * @property string|null $entry_key
  * @property int $from_callsign
  * @property int $to_callsign
+ * @property string|null $to_city
+ * @property string|null $to_state
+ * @property string|null $to_county
  * @property float $frequency
  * @property string $band
  * @property string $mode
@@ -36,7 +41,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property int|null $park_id
  * @property string $category
+ * @property bool $hidden_from_public
  * @property-read Callsign $callee
+ * @property-read POTAPark|null $park
  * @property-read Callsign $station
  * @method static LogbookEntryFactory factory($count = null, $state = [])
  * @method static Builder<static>|LogbookEntry newModelQuery()
@@ -60,9 +67,12 @@ use Illuminate\Support\Carbon;
  * @method static Builder<static>|LogbookEntry whereRstSent($value)
  * @method static Builder<static>|LogbookEntry whereToCallsign($value)
  * @method static Builder<static>|LogbookEntry whereToCoordinates($value)
+ * @method static Builder<static>|LogbookEntry whereToCity($value)
+ * @method static Builder<static>|LogbookEntry whereToCounty($value)
  * @method static Builder<static>|LogbookEntry whereToGrid($value)
  * @method static Builder<static>|LogbookEntry whereToLatitude($value)
  * @method static Builder<static>|LogbookEntry whereToLongitude($value)
+ * @method static Builder<static>|LogbookEntry whereToState($value)
  * @method static Builder<static>|LogbookEntry whereUpdatedAt($value)
  * @mixin \Eloquent
  */
@@ -72,6 +82,10 @@ class LogbookEntry extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'hidden_from_public' => 'boolean',
+    ];
+
     public function station(): BelongsTo
     {
         return $this->belongsTo(Callsign::class, 'from_callsign');
@@ -80,5 +94,46 @@ class LogbookEntry extends Model
     public function callee(): BelongsTo
     {
         return $this->belongsTo(Callsign::class, 'to_callsign');
+    }
+
+    public function park(): BelongsTo
+    {
+        return $this->belongsTo(POTAPark::class, 'park_id');
+    }
+
+    /**
+     * @param Builder<LogbookEntry> $query
+     */
+    public function scopeVisibility(Builder $query, string $visibility): Builder
+    {
+        return $query
+            ->when($visibility === 'hidden', fn (Builder $query) => $query->where('hidden_from_public', true))
+            ->when($visibility === 'public', fn (Builder $query) => $query->where('hidden_from_public', false));
+    }
+
+    /**
+     * @param Builder<LogbookEntry> $query
+     */
+    public function scopeSearch(Builder $query, string $search): Builder
+    {
+        $search = trim($search);
+
+        if ($search === '') {
+            return $query;
+        }
+
+        $like = '%' . str_replace(['\\', '%', '_'], ['\\\\', '\%', '\_'], $search) . '%';
+
+        return $query->where(function (Builder $query) use ($like): void {
+            $query->where('qrz_logid', 'like', $like)
+                ->orWhere('band', 'like', $like)
+                ->orWhere('mode', 'like', $like)
+                ->orWhere('to_grid', 'like', $like)
+                ->orWhere('comments', 'like', $like)
+                ->orWhereHas('callee', function (Builder $query) use ($like): void {
+                    $query->where('name', 'like', $like)
+                        ->orWhere('country', 'like', $like);
+                });
+        });
     }
 }

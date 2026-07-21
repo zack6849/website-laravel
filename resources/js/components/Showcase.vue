@@ -1,11 +1,69 @@
 <template>
     <div class="showcase space-y-12 md:space-y-16">
         <section>
-            <div class="mb-4">
-                <h3><span class="text-2xl">&#129520;</span> Technology Stack</h3>
+            <div class="mb-6 rounded-lg border border-gray-200 bg-slate-50 p-4 text-sm text-slate-700">
+                <h4 class="mb-2 text-sm font-semibold text-slate-900">How I Work</h4>
+                <p>
+                    I am usually most useful on backend-heavy projects that cross application boundaries: evolving data models,
+                    designing APIs, coordinating web and mobile changes, modernizing long-lived systems, and making production behavior
+                    easier to understand. I am comfortable owning a product from an early sketch through rollout, or working within a
+                    larger team where compatibility and operational safety matter.
+                </p>
             </div>
 
-            <div class="mb-3 flex flex-wrap items-center gap-3 text-xs text-gray-500">
+            <div class="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <h3><span class="text-2xl">&#128187;</span> Selected Work</h3>
+                <div class="w-full md:w-auto">
+                    <div class="grid w-full grid-cols-3 rounded-full border border-gray-200 p-0.5 text-xs md:inline-flex md:w-auto">
+                        <button
+                            v-for="option in options"
+                            :key="option.value"
+                            type="button"
+                            @click="activeContext = option.value"
+                            class="rounded-full px-3 py-1 text-center"
+                            :class="activeContext === option.value ? 'bg-brand-600 text-white glow' : 'text-gray-500 hover:text-gray-700'"
+                        >
+                            {{ option.label }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <p class="mb-6 text-sm text-gray-500">Selected personal and professional work.</p>
+            <div class="grid grid-cols-1 gap-6 lg:items-start" :class="activeContext === 'all' ? 'lg:grid-cols-2' : 'lg:grid-cols-1'">
+                <showcase-project-column
+                    v-if="activeContext !== 'personal'"
+                    class="order-1"
+                    category="professional"
+                    title="Professional work"
+                    more-label="professional project"
+                    :projects="categorizedProjects.professional"
+                />
+
+                <showcase-project-column
+                    v-if="activeContext !== 'professional'"
+                    class="order-2"
+                    category="personal"
+                    title="Personal projects"
+                    more-label="personal project"
+                    :projects="categorizedProjects.personal"
+                />
+            </div>
+        </section>
+
+        <section class="border-t border-gray-100 pt-12 md:pt-16">
+            <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <h3><span class="text-2xl">&#129520;</span> Technology Focus</h3>
+                <button
+                    v-if="hasSecondaryTechnologies"
+                    type="button"
+                    @click="showAllTechnologies = !showAllTechnologies"
+                    class="rounded-full border border-gray-300 bg-white px-3 py-1 text-xs font-medium text-gray-600 hover:text-gray-800"
+                >
+                    {{ showAllTechnologies ? 'Show primary tools' : 'Show broader experience' }}
+                </button>
+            </div>
+
+            <div v-if="showAllTechnologies" class="mb-3 flex flex-wrap items-center gap-3 text-xs text-gray-500">
                 <span
                     v-for="tier in tierLegend"
                     :key="tier.value"
@@ -15,10 +73,11 @@
                     {{ tier.label }}
                 </span>
             </div>
+            <p v-else class="mb-3 text-xs text-gray-500">Showing strongest and current tools.</p>
 
             <div class="divide-y divide-gray-100">
                 <div
-                    v-for="(items, category) in categories"
+                    v-for="(items, category) in displayedCategories"
                     :key="category"
                     class="flex flex-wrap items-start gap-x-4 gap-y-2 py-3"
                 >
@@ -45,47 +104,6 @@
                 >
                     {{ tech.name }}
                 </span>
-            </div>
-        </section>
-
-        <section class="border-t border-gray-100 pt-12 md:pt-16">
-            <div class="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <h3><span class="text-2xl">&#128187;</span> Selected Work</h3>
-                <div class="w-full md:w-auto">
-                    <div class="grid w-full grid-cols-3 rounded-full border border-gray-200 p-0.5 text-xs md:inline-flex md:w-auto">
-                        <button
-                            v-for="option in options"
-                            :key="option.value"
-                            type="button"
-                            @click="activeContext = option.value"
-                            class="rounded-full px-3 py-1 text-center"
-                            :class="activeContext === option.value ? 'bg-brand-600 text-white glow' : 'text-gray-500 hover:text-gray-700'"
-                        >
-                            {{ option.label }}
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <p class="mb-6 text-sm text-gray-500">Selected personal and professional work.</p>
-
-            <div class="grid grid-cols-1 gap-6 lg:items-start" :class="activeContext === 'all' ? 'lg:grid-cols-2' : 'lg:grid-cols-1'">
-                <showcase-project-column
-                    v-if="activeContext !== 'personal'"
-                    class="order-1"
-                    category="professional"
-                    title="Professional work"
-                    more-label="professional project"
-                    :projects="categorizedProjects.professional"
-                />
-
-                <showcase-project-column
-                    v-if="activeContext !== 'professional'"
-                    class="order-2"
-                    category="personal"
-                    title="Personal projects"
-                    more-label="personal project"
-                    :projects="categorizedProjects.personal"
-                />
             </div>
         </section>
     </div>
@@ -116,6 +134,7 @@ export default {
     data() {
         return {
             activeContext: 'all',
+            showAllTechnologies: false,
             options: [
                 { value: 'all', label: 'All' },
                 { value: 'personal', label: 'Personal' },
@@ -136,6 +155,31 @@ export default {
                 professional: Array.isArray(categories.professional) ? categories.professional : [],
                 personal: Array.isArray(categories.personal) ? categories.personal : [],
             };
+        },
+        displayedCategories() {
+            const categories = this.categories ?? {};
+            const scopedCategories = {};
+
+            Object.entries(categories).forEach(([category, items]) => {
+                if (!Array.isArray(items)) {
+                    return;
+                }
+
+                const scopedItems = this.showAllTechnologies
+                    ? items
+                    : items.filter((tech) => tech.tier === 1);
+
+                if (scopedItems.length) {
+                    scopedCategories[category] = scopedItems;
+                }
+            });
+
+            return scopedCategories;
+        },
+        hasSecondaryTechnologies() {
+            return Object.values(this.categories ?? {}).some(
+                (items) => Array.isArray(items) && items.some((tech) => tech.tier > 1),
+            );
         },
     },
     methods: {

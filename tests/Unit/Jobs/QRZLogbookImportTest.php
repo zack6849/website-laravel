@@ -7,6 +7,8 @@ namespace Tests\Unit\Jobs;
 use App\Jobs\QRZLogbookImport;
 use App\Models\Callsign;
 use App\Models\LogbookEntry;
+use App\Models\LogbookEntryVisibilityOverride;
+use App\Services\LogbookEntryIdentity;
 use App\Services\ParksOnTheAirService;
 use App\Services\QRZLogbookService;
 use Illuminate\Support\Facades\Cache;
@@ -23,6 +25,7 @@ class QRZLogbookImportTest extends TestCase
         //without this, a 'logbook' key warmed by an earlier test would make
         //QRZLogbookService::getLogbookEntries() never get called here
         Cache::forget('logbook');
+        Cache::forget('logbook:last_imported_at');
     }
 
     #[Test]
@@ -70,6 +73,63 @@ class QRZLogbookImportTest extends TestCase
         // (including the one that didn't fail) should have been persisted
         $this->assertDatabaseCount('logbook_entries', 1);
         $this->assertDatabaseHas('logbook_entries', ['id' => $existing->id]);
+    }
+
+    #[Test]
+    public function hiddenVisibilityOverridesSurviveLogbookReimport(): void
+    {
+        $record = $this->adifRecord([
+            'APP_QRZLOG_LOGID' => '123456789',
+            'CALL' => 'K1BADGRID',
+            'COUNTRY' => 'USA',
+            'GRIDSQUARE' => 'NN00nm',
+        ]);
+        $entryKey = resolve(LogbookEntryIdentity::class)->forRecord($record);
+
+        LogbookEntryVisibilityOverride::create([
+            'qrz_logid' => '123456789',
+            'entry_key' => $entryKey,
+            'hidden_from_public' => true,
+        ]);
+
+        $this->mock(QRZLogbookService::class, function (MockInterface $mock) use ($record) {
+            $mock->shouldReceive('getLogbookEntries')->once()->andReturn([$record]);
+        });
+
+        dispatch_sync(resolve(QRZLogbookImport::class));
+
+        $this->assertDatabaseHas('logbook_entries', [
+            'qrz_logid' => '123456789',
+            'entry_key' => $entryKey,
+            'hidden_from_public' => true,
+            'to_grid' => 'NN00nm',
+        ]);
+        $this->assertIsInt(Cache::get('logbook:last_imported_at'));
+    }
+
+    #[Test]
+    public function qrzLocationFieldsAreStoredOnImportedEntries(): void
+    {
+        $record = $this->adifRecord([
+            'APP_QRZLOG_LOGID' => '987654321',
+            'CALL' => 'KL7ABC',
+            'QTH' => 'Anchorage',
+            'STATE' => 'AK',
+            'CNTY' => 'Anchorage',
+        ]);
+
+        $this->mock(QRZLogbookService::class, function (MockInterface $mock) use ($record) {
+            $mock->shouldReceive('getLogbookEntries')->once()->andReturn([$record]);
+        });
+
+        dispatch_sync(resolve(QRZLogbookImport::class));
+
+        $this->assertDatabaseHas('logbook_entries', [
+            'qrz_logid' => '987654321',
+            'to_city' => 'Anchorage',
+            'to_state' => 'AK',
+            'to_county' => 'Anchorage',
+        ]);
     }
 
     private function adifRecord(array $overrides = []): array

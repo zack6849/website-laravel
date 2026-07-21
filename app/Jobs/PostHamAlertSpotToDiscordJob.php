@@ -21,8 +21,17 @@ class PostHamAlertSpotToDiscordJob implements ShouldQueue
 
     public function handle(): void
     {
-        Http::retry(3, 100)->post(config('services.discord.webhook_uri'), [
+        $webhookUri = config('services.discord.webhook_uri');
+
+        if (! is_string($webhookUri) || trim($webhookUri) === '') {
+            return;
+        }
+
+        Http::timeout(5)->connectTimeout(3)->retry(3, 100)->post($webhookUri, [
             'content' => $this->spot->toDiscordSummary(),
+            'allowed_mentions' => [
+                'parse' => [],
+            ],
         ]);
     }
 }

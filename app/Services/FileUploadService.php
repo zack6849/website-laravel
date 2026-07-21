@@ -12,6 +12,7 @@ use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Throwable;
 
 class FileUploadService
 {
@@ -27,10 +28,13 @@ class FileUploadService
 
     public function getFilename(UploadedFile $file): string
     {
+        $extension = strtolower($file->getClientOriginalExtension());
+        $extension = preg_replace('/[^a-z0-9]/', '', $extension) ?: 'bin';
+
         return implode('_', [
                 Str::orderedUuid(),
                 Str::random(12),
-            ]) . "." . $file->getClientOriginalExtension();
+            ]) . "." . $extension;
     }
 
     public function storeUploadedFile(UploadedFile $file, User $user): File
@@ -40,15 +44,23 @@ class FileUploadService
         $path = $this->disk->putFileAs($storagePath, $file, $name, [
             'visibility' => 'public'
         ]);
-        $file = new File([
+        $uploadedFile = new File([
             'file_location' => $path,
             'filename' => $name,
             'original_filename' => $file->getClientOriginalName(),
             'mime' => $file->getMimeType(),
             'size' => $file->getSize(),
         ]);
-        $user->files()->save($file);
-        return $file;
+
+        try {
+            $user->files()->save($uploadedFile);
+        } catch (Throwable $exception) {
+            $this->disk->delete($path);
+
+            throw $exception;
+        }
+
+        return $uploadedFile;
     }
 
     /**
