@@ -108,6 +108,10 @@ class QRZLogbookImport implements ShouldQueue
 
         $myLat = $this->transformCoordinates(Arr::get($record, 'MY_LAT'));
         $myLon = $this->transformCoordinates(Arr::get($record, 'MY_LON'));
+        if ($this->isUnknownLocationPlaceholder($myLat, $myLon)) {
+            $myLat = null;
+            $myLon = null;
+        }
         $park = $this->getRelatedPark($record);
         $grid = $this->getGridSquare($record, $park);
         list($theirLat, $theirLon) = $this->getLatLong($record, $park);
@@ -127,11 +131,11 @@ class QRZLogbookImport implements ShouldQueue
             'rst_sent' => Arr::get($record, 'RST_SENT'),
             'rst_received' => Arr::get($record, 'RST_RCVD'),
             'from_grid' => Arr::get($record, 'MY_GRIDSQUARE'),
-            'from_coordinates' => implode(',', [$myLat, $myLon]),
+            'from_coordinates' => $this->combineCoordinates($myLat, $myLon),
             'from_latitude' => $myLat,
             'from_longitude' => $myLon,
             'to_grid' => $grid,
-            'to_coordinates' => implode(',', [$theirLat, $theirLon]),
+            'to_coordinates' => $this->combineCoordinates($theirLat, $theirLon),
             'to_latitude' => $theirLat,
             'to_longitude' => $theirLon,
             'distance' => Arr::get($record, 'DISTANCE'),
@@ -189,19 +193,41 @@ class QRZLogbookImport implements ShouldQueue
         return $value === '' ? null : $value;
     }
 
-    public function transformCoordinates($coordinates): string
+    /**
+     * Parses an ADIF "N40 00.000"-style coordinate into a decimal-degrees string.
+     *
+     * Returns null only when the value can't be parsed. A genuinely zero
+     * latitude or longitude is a real position (equator, prime meridian) -
+     * detecting QRZ's "N000 00.000" unknown-location placeholder requires
+     * looking at the lat/lon *pair* together, which callers do via
+     * isUnknownLocationPlaceholder() once both axes are known.
+     */
+    public function transformCoordinates($coordinates): ?string
     {
         $matches = [];
-        preg_match('/([NSEW])(\d+)\s(\d+)\.?(\d+)/', $coordinates, $matches);
+        preg_match('/([NSEW])(\d+)\s(\d+)\.?(\d+)/', (string) $coordinates, $matches);
         array_shift($matches);
         $direction = array_shift($matches);
-        if (in_array($direction, ['W', 'S'])) {
-            $prefix = "-";
-        } else {
-            $prefix = '';
-        }
         $mainLocator = array_shift($matches);
-        return number_format("$prefix$mainLocator." . implode('', $matches), 5, '.', '');
+
+        if ($direction === null || $mainLocator === null) {
+            return null;
+        }
+
+        $prefix = in_array($direction, ['W', 'S'], true) ? '-' : '';
+
+        return number_format((float) ("$prefix$mainLocator." . implode('', $matches)), 5, '.', '');
+    }
+
+    /**
+     * QRZ fills unknown locations with "N000 00.000"/"E000 00.000" rather than
+     * omitting the field, which transformCoordinates() parses as a legitimate
+     * (0, 0). A real amateur radio contact doesn't sit at exactly (0, 0), so
+     * treat that specific pair - not either axis alone - as "unknown".
+     */
+    private function isUnknownLocationPlaceholder(?string $lat, ?string $lon): bool
+    {
+        return $lat !== null && $lon !== null && (float) $lat === 0.0 && (float) $lon === 0.0;
     }
 
     private function getGridSquare(array $adifEntry, ?POTAPark $park) : string
@@ -218,6 +244,9 @@ class QRZLogbookImport implements ShouldQueue
         return $grid;
     }
 
+    /**
+     * @return array{0: ?string, 1: ?string}
+     */
     private function getLatLong(array $record, ?POTAPark $park) : array
     {
         $lat = $this->transformCoordinates(Arr::get($record, 'LAT'));
@@ -226,7 +255,17 @@ class QRZLogbookImport implements ShouldQueue
             $lat = $park->latitude;
             $lon = $park->longitude;
         }
+
+        if ($this->isUnknownLocationPlaceholder($lat, $lon)) {
+            return [null, null];
+        }
+
         return [$lat, $lon];
+    }
+
+    private function combineCoordinates(?string $lat, ?string $lon): ?string
+    {
+        return $lat !== null && $lon !== null ? "$lat,$lon" : null;
     }
 
     public function getRelatedPark(array $adifEntry){

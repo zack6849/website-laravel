@@ -28,13 +28,13 @@ use Illuminate\Support\Carbon;
  * @property string|null $rst_sent
  * @property string|null $rst_received
  * @property string $from_grid
- * @property string $from_coordinates
- * @property string $from_latitude
- * @property string $from_longitude
+ * @property string|null $from_coordinates
+ * @property string|null $from_latitude
+ * @property string|null $from_longitude
  * @property string|null $to_grid
  * @property string|null $to_coordinates
- * @property string $to_latitude
- * @property string $to_longitude
+ * @property string|null $to_latitude
+ * @property string|null $to_longitude
  * @property int|null $distance distance in miles
  * @property string|null $comments
  * @property Carbon|null $created_at

@@ -8,16 +8,21 @@ use Tests\TestCase;
 class NavigationHeaderTest extends TestCase
 {
     #[Test]
-    public function publicHeaderIncludesLogbookInTheToolsDropdown(): void
+    public function publicHeaderFeaturesLogbookAndPhoneLookupAsTopLevelLinks(): void
     {
         $response = $this->get('/');
 
         $response->assertOk();
         $response->assertSee(
-            '<a href="'.route('radio').'" class="block py-1 lg:py-2 lg:px-4 nav-link lg:text-gray-700 lg:hover:bg-gray-100 lg:hover:text-gray-900">',
+            '<a href="'.route('radio').'" class="block lg:inline-block lg:mt-0 nav-link mr-4">',
+            false,
+        );
+        $response->assertSee(
+            '<a href="'.route('phone.lookup.index').'" class="block lg:inline-block lg:mt-0 nav-link mr-4">',
             false,
         );
         $response->assertSee('Logbook');
+        $response->assertSee("Who's Calling Me?", false);
         $response->assertDontSee(route('admin.logbook.index'), false);
     }
 }

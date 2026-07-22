@@ -7,6 +7,7 @@
     @endpush
     <qso-map
         mapbox-key="{{config('services.mapbox.token')}}"
-        :config="{lat: 27.48750, lng: -82.42480, zoom: 4}"
+        :config="@js($mapConfig)"
+        :qth="@js($qth)"
     />
 </x-base-page>

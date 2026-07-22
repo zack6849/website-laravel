@@ -33,7 +33,7 @@ class DatabaseSeederTest extends TestCase
         $user = User::where('email', 'zack@zcraig.me')->firstOrFail();
 
         $this->assertTrue($user->isAdmin());
-        $this->assertTrue($user->horizon_access);
+        $this->assertTrue($user->is_admin);
     }
 
     public function testSeededBackgroundCssValuesAreValid(): void

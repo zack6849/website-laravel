@@ -43,6 +43,14 @@ class PageController extends Controller
 
     public function radio(): Renderable
     {
-        return view('pages.radio-contact-map');
+        $radioOrigin = [
+            'lat' => (float) config('radio.origin.latitude'),
+            'lng' => (float) config('radio.origin.longitude'),
+        ];
+
+        return view('pages.radio-contact-map', [
+            'mapConfig' => array_merge($radioOrigin, ['zoom' => 4]),
+            'qth' => array_merge($radioOrigin, ['label' => 'Approx. QTH']),
+        ]);
     }
 }

@@ -20,7 +20,6 @@ class DatabaseSeeder extends Seeder
         $user->name = "Zachary Craig";
         $user->password = Hash::make("password");
         $user->email = "zack@zcraig.me";
-        $user->horizon_access = true;
         $user->is_admin = true;
         $user->save();
 

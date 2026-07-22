@@ -8,6 +8,7 @@ use App\Http\Resources\LogbookEntryResource;
 use App\Models\POTAPark;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -33,8 +34,9 @@ class LogbookEntryResourceTest extends TestCase
         $this->assertSame('2026-07-11 12:00:00', $resource['qso_date']);
         $this->assertSame(10, $resource['age_days']);
         $this->assertSame(0.973, $resource['recency_score']);
-        $this->assertSame('pin', $resource['icon']);
-        $this->assertSame(0.025, $resource['icon_size']);
+        $this->assertSame('#f97316', $resource['band_color']);
+        $this->assertSame('mode-phone', $resource['mode_icon']);
+        $this->assertSame('Phone', $resource['mode_label']);
         $this->assertSame(100, $resource['distance']);
         $this->assertFalse($resource['distance_estimated']);
         $this->assertSame('United States', $resource['to_country']);
@@ -52,7 +54,7 @@ class LogbookEntryResourceTest extends TestCase
     }
 
     #[Test]
-    public function prefersExplicitQsoDateAndKeepsPotaTreeStyling(): void
+    public function prefersExplicitQsoDateAndKeepsPotaDetailsOutOfTheMarkerIcon(): void
     {
         Carbon::setTestNow(Carbon::parse('2026-07-21 12:00:00'));
         $entry = $this->logbookEntry([
@@ -66,8 +68,43 @@ class LogbookEntryResourceTest extends TestCase
         $this->assertSame('2026-07-16 12:00:00', $resource['qso_date']);
         $this->assertSame(5, $resource['age_days']);
         $this->assertSame(0.986, $resource['recency_score']);
-        $this->assertSame('tree', $resource['icon']);
-        $this->assertSame(0.25, $resource['icon_size']);
+        $this->assertSame('POTA', $resource['category']);
+        $this->assertSame('mode-phone', $resource['mode_icon']);
+        $this->assertSame('Phone', $resource['mode_label']);
+        $this->assertArrayNotHasKey('icon', $resource);
+        $this->assertArrayNotHasKey('icon_size', $resource);
+    }
+
+    #[Test]
+    #[DataProvider('visualPropertyProvider')]
+    public function includesVisualPropertiesForBandsAndModeGroups(
+        string $band,
+        string $mode,
+        string $expectedBandColor,
+        string $expectedModeIcon,
+        string $expectedModeLabel,
+    ): void {
+        $entry = $this->logbookEntry([
+            'band' => $band,
+            'mode' => $mode,
+        ]);
+
+        $resource = (new LogbookEntryResource($entry))->toArray(new Request());
+
+        $this->assertSame($expectedBandColor, $resource['band_color']);
+        $this->assertSame($expectedModeIcon, $resource['mode_icon']);
+        $this->assertSame($expectedModeLabel, $resource['mode_label']);
+    }
+
+    public static function visualPropertyProvider(): array
+    {
+        return [
+            'ssb phone on 20m' => ['20M', 'SSB', '#f97316', 'mode-phone', 'Phone'],
+            'ft8 digital on 40m' => ['40M', 'FT8', '#0ea5e9', 'mode-digital', 'Digital'],
+            'cw on 15m falls back to the other bucket' => ['15M', 'CW', '#22c55e', 'mode-other', 'Other'],
+            'sstv on 20m' => ['20M', 'SSTV', '#f97316', 'mode-sstv', 'SSTV'],
+            'unknown mode and band' => ['6M', 'HELL', '#64748b', 'mode-other', 'Other'],
+        ];
     }
 
     #[Test]

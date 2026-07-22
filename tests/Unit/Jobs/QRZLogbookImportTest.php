@@ -132,6 +132,58 @@ class QRZLogbookImportTest extends TestCase
         ]);
     }
 
+    #[Test]
+    public function qrzsUnknownLocationPlaceholderIsStoredAsNullRatherThanNullIsland(): void
+    {
+        // QRZ fills in "N000 00.000" rather than omitting LAT/LON when a
+        // station's location isn't known; that must not become a real (0, 0)
+        // marker on the map.
+        $record = $this->adifRecord([
+            'APP_QRZLOG_LOGID' => '555555555',
+            'LAT' => 'N000 00.000',
+            'LON' => 'E000 00.000',
+        ]);
+
+        $this->mock(QRZLogbookService::class, function (MockInterface $mock) use ($record) {
+            $mock->shouldReceive('getLogbookEntries')->once()->andReturn([$record]);
+        });
+
+        dispatch_sync(resolve(QRZLogbookImport::class));
+
+        $this->assertDatabaseHas('logbook_entries', [
+            'qrz_logid' => '555555555',
+            'to_latitude' => null,
+            'to_longitude' => null,
+            'to_coordinates' => null,
+        ]);
+    }
+
+    #[Test]
+    public function aGenuineEquatorOrPrimeMeridianContactIsNotTreatedAsUnknown(): void
+    {
+        // Only the *pair* (0, 0) is QRZ's unknown-location placeholder. A real
+        // contact can legitimately sit on the equator (lat 0) or the prime
+        // meridian (lon 0) while the other axis is a real, non-zero value.
+        $record = $this->adifRecord([
+            'APP_QRZLOG_LOGID' => '666666666',
+            'LAT' => 'N000 00.000',
+            'LON' => 'W078 30.000',
+        ]);
+
+        $this->mock(QRZLogbookService::class, function (MockInterface $mock) use ($record) {
+            $mock->shouldReceive('getLogbookEntries')->once()->andReturn([$record]);
+        });
+
+        dispatch_sync(resolve(QRZLogbookImport::class));
+
+        $this->assertDatabaseHas('logbook_entries', [
+            'qrz_logid' => '666666666',
+            'to_latitude' => '0.00000',
+            'to_longitude' => '-78.30000',
+            'to_coordinates' => '0.00000,-78.30000',
+        ]);
+    }
+
     private function adifRecord(array $overrides = []): array
     {
         return array_merge([

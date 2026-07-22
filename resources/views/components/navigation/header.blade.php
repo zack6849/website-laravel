@@ -14,22 +14,14 @@
                     <a href="{{route('home')}}" class="block lg:inline-block lg:mt-0 nav-link mr-4">
                         Home
                     </a>
-                    <div class="lg:relative block lg:inline-block lg:mr-4">
-                        <button data-tools-toggle type="button" class="flex w-full items-center gap-1 lg:w-auto lg:mt-0 nav-link">
-                            Tools
-                            <svg data-tools-chevron class="h-3 w-3 fill-current transition-transform" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M5.516 7.548c.436-.446 1.043-.48 1.576 0L10 10.405l2.908-2.857c.533-.48 1.141-.446 1.574 0 .436.445.408 1.197 0 1.615-.406.418-4.695 4.502-4.695 4.502a1.095 1.095 0 0 1-1.576 0S5.919 9.581 5.516 9.163c-.409-.418-.436-1.17 0-1.615z"/></svg>
-                        </button>
-                        <div data-tools-menu class="hidden pl-4 lg:pl-0 lg:absolute lg:bg-white lg:rounded lg:shadow-lg lg:py-1 lg:w-48 lg:z-10">
-                            <a href="{{route('phone.lookup.index')}}" class="block py-1 lg:py-2 lg:px-4 nav-link lg:text-gray-700 lg:hover:bg-gray-100 lg:hover:text-gray-900">
-                                Who's Calling Me?
-                            </a>
-                            <a href="{{route('radio')}}" class="block py-1 lg:py-2 lg:px-4 nav-link lg:text-gray-700 lg:hover:bg-gray-100 lg:hover:text-gray-900">
-                                Logbook
-                            </a>
-                        </div>
-                    </div>
+                    <a href="{{route('radio')}}" class="block lg:inline-block lg:mt-0 nav-link mr-4">
+                        Logbook
+                    </a>
                     <a href="{{route('photos')}}" class="block lg:inline-block lg:mt-0 nav-link mr-4">
                         Photos
+                    </a>
+                    <a href="{{route('phone.lookup.index')}}" class="block lg:inline-block lg:mt-0 nav-link mr-4">
+                        Who's Calling Me?
                     </a>
                 </div>
                 <div class="items-end">

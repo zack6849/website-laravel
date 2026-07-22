@@ -28,7 +28,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property int $lookup_limit
  * @property int $lookup_decay_rate
- * @property bool $horizon_access
+ * @property bool $is_admin
  * @property-read Collection<int, File> $files
  * @property-read int|null $files_count
  * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications
@@ -43,8 +43,8 @@ use Illuminate\Support\Carbon;
  * @method static Builder<static>|User whereLookupDecayRate($value)
  * @method static Builder<static>|User whereEmail($value)
  * @method static Builder<static>|User whereEmailVerifiedAt($value)
- * @method static Builder<static>|User whereHorizonAccess($value)
  * @method static Builder<static>|User whereId($value)
+ * @method static Builder<static>|User whereIsAdmin($value)
  * @method static Builder<static>|User whereName($value)
  * @method static Builder<static>|User wherePassword($value)
  * @method static Builder<static>|User whereRememberToken($value)
@@ -62,7 +62,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'api_token', 'lookup_limit', 'lookup_decay_rate', 'horizon_access', 'is_admin'
+        'name', 'email', 'password', 'api_token', 'lookup_limit', 'lookup_decay_rate', 'is_admin'
     ];
 
     /**
@@ -79,7 +79,6 @@ class User extends Authenticatable
     ];
 
     protected $casts = [
-        'horizon_access' => 'boolean',
         'is_admin' => 'boolean',
     ];
 

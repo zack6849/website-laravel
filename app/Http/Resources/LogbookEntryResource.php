@@ -63,6 +63,9 @@ class LogbookEntryResource extends JsonResource
             'qso_date' => $qsoTimestamp?->format('Y-m-d H:i:s'),
             'age_days' => $ageDays,
             'recency_score' => $this->scoring->recencyScore($ageDays),
+            'band_color' => $this->bandColor(),
+            'mode_icon' => $this->modeIcon(),
+            'mode_label' => $this->modeLabel(),
         ]);
 
         $coordinates = $this->extractCoordinates();
@@ -88,13 +91,6 @@ class LogbookEntryResource extends JsonResource
             $value['distance_estimated'] = false;
         }
 
-        $value['icon_size'] = 0.025;
-        $value['icon'] = 'pin';
-        if ($this->category === 'POTA') {
-            $value['icon'] = 'tree';
-            $value['icon_size'] = 0.25;
-        }
-
         unset(
             $value['station'],
             $value['callee'],
@@ -110,6 +106,59 @@ class LogbookEntryResource extends JsonResource
         );
 
         return $value;
+    }
+
+    private function bandColor(): string
+    {
+        return match (strtoupper(trim((string) $this->resource->getAttribute('band')))) {
+            '160M' => '#1d4ed8',
+            '80M' => '#2563eb',
+            '40M' => '#0ea5e9',
+            '30M' => '#f59e0b',
+            '20M' => '#f97316',
+            '17M' => '#16a34a',
+            '15M' => '#22c55e',
+            '12M' => '#e11d48',
+            '10M' => '#ef4444',
+            default => '#64748b',
+        };
+    }
+
+    private function modeIcon(): string
+    {
+        return $this->modeVisualProperty('icon');
+    }
+
+    private function modeLabel(): string
+    {
+        return $this->modeVisualProperty('label');
+    }
+
+    private function modeVisualProperty(string $property): string
+    {
+        $mode = strtoupper(trim((string) $this->resource->getAttribute('mode')));
+        $visual = match (true) {
+            in_array($mode, ['SSB', 'USB', 'LSB', 'FM', 'AM'], true) => [
+                'icon' => 'mode-phone',
+                'label' => 'Phone',
+            ],
+            in_array($mode, ['FT8', 'FT4', 'JS8', 'VARA', 'RTTY'], true)
+                || str_starts_with($mode, 'PSK')
+                || str_starts_with($mode, 'MFSK') => [
+                    'icon' => 'mode-digital',
+                    'label' => 'Digital',
+                ],
+            $mode === 'SSTV' => [
+                'icon' => 'mode-sstv',
+                'label' => 'SSTV',
+            ],
+            default => [
+                'icon' => 'mode-other',
+                'label' => 'Other',
+            ],
+        };
+
+        return $visual[$property];
     }
 
     private function extractCoordinates(): ?array
@@ -242,4 +291,3 @@ class LogbookEntryResource extends JsonResource
         return $value === '' ? null : $value;
     }
 }
-

@@ -42,8 +42,8 @@ class AppServiceProvider extends ServiceProvider
             return new Client(config('twilio.sid'), config('twilio.token'));
         });
 
-        Gate::define('viewPulse', function ($user) {
-            return $user->horizon_access;
+        Gate::define('viewPulse', function (User $user) {
+            return $user->isAdmin();
         });
 
         Gate::define('access-admin', function (User $user) {

@@ -21,6 +21,29 @@ class LogbookControllerTest extends TestCase
     }
 
     #[Test]
+    public function radioPageReceivesTheConfiguredApproximateQth(): void
+    {
+        config([
+            'radio.origin.latitude' => 12.3456,
+            'radio.origin.longitude' => -65.4321,
+        ]);
+
+        $response = $this->get('/radio');
+
+        $response->assertOk();
+        $response->assertViewHas('mapConfig', [
+            'lat' => 12.3456,
+            'lng' => -65.4321,
+            'zoom' => 4,
+        ]);
+        $response->assertViewHas('qth', [
+            'lat' => 12.3456,
+            'lng' => -65.4321,
+            'label' => 'Approx. QTH',
+        ]);
+    }
+
+    #[Test]
     public function returnsRecentContactsWithoutExposingTheStationCallsign(): void
     {
         $station = Callsign::create(['name' => 'N0PRIVATE', 'country' => 'United States']);

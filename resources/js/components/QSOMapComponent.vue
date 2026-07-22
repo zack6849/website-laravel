@@ -73,9 +73,37 @@
             <section id="qso-map-shell" class="min-w-0 border border-gray-200 bg-white">
                 <div class="flex items-center justify-between border-b border-gray-200 px-3 py-2">
                     <h2 class="text-base font-semibold text-gray-900">Map View</h2>
-                    <span class="text-sm text-gray-500">Newer contacts are brighter</span>
+                    <span class="text-sm text-gray-500">Newer contacts are larger and brighter</span>
                 </div>
                 <div id="map" />
+                <div class="border-t border-gray-200 px-3 py-2">
+                    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-600">
+                        <span class="font-semibold text-gray-900">Legend</span>
+                        <span
+                            v-for="item in bandLegendItems"
+                            :key="item.label"
+                            class="inline-flex items-center gap-1.5"
+                        >
+                            <span
+                                class="legend-band-swatch"
+                                :style="{backgroundColor: item.color}"
+                                aria-hidden="true"
+                            />
+                            <span v-text="item.label" />
+                        </span>
+                        <span class="hidden h-4 border-l border-gray-300 sm:inline-block" aria-hidden="true" />
+                        <span
+                            v-for="item in modeLegendItems"
+                            :key="item.label"
+                            class="inline-flex items-center gap-1.5"
+                        >
+                            <span class="legend-mode-icon" aria-hidden="true">
+                                <img :src="item.url" alt="" />
+                            </span>
+                            <span v-text="item.label" />
+                        </span>
+                    </div>
+                </div>
             </section>
 
             <section class="min-w-0 border border-gray-200 bg-white">
@@ -177,8 +205,8 @@ const EMPTY_FEATURE_COLLECTION = {
 };
 
 const EMPTY_HIGHLIGHT_FILTER = ['==', ['to-string', ['get', 'id']], '__none__'];
-const DEFAULT_BAND = '20M';
-const DEFAULT_MODE = 'SSB';
+const DEFAULT_BAND = 'All';
+const DEFAULT_MODE = 'All';
 const DEFAULT_SORT = 'newest';
 const CONTACT_LIMIT = 200;
 const DISTANCE_FORMATTER = new Intl.NumberFormat(undefined, {
@@ -190,10 +218,38 @@ const SORT_OPTIONS = [
     {value: 'distance_desc', label: 'Longest distance (DX)'},
     {value: 'distance_asc', label: 'Shortest distance'},
 ];
+// Must stay in sync with LogbookEntryResource::bandColor() - one entry per
+// band, matching hex-for-hex, since no two bands share a color there.
+const BAND_LEGEND_ITEMS = [
+    {label: '160M', color: '#1d4ed8'},
+    {label: '80M', color: '#2563eb'},
+    {label: '40M', color: '#0ea5e9'},
+    {label: '30M', color: '#f59e0b'},
+    {label: '20M', color: '#f97316'},
+    {label: '17M', color: '#16a34a'},
+    {label: '15M', color: '#22c55e'},
+    {label: '12M', color: '#e11d48'},
+    {label: '10M', color: '#ef4444'},
+    {label: 'Other', color: '#64748b'},
+];
+const MODE_ICON_URLS = {
+    'mode-phone': '/img/radio-icons/mode-phone.svg',
+    'mode-digital': '/img/radio-icons/mode-digital.svg',
+    'mode-sstv': '/img/radio-icons/mode-sstv.svg',
+    'mode-other': '/img/radio-icons/mode-other.svg',
+};
+const MODE_LEGEND_ITEMS = [
+    {label: 'Phone', url: MODE_ICON_URLS['mode-phone']},
+    {label: 'Digital', url: MODE_ICON_URLS['mode-digital']},
+    {label: 'SSTV', url: MODE_ICON_URLS['mode-sstv']},
+    {label: 'Other', url: MODE_ICON_URLS['mode-other']},
+];
+const QTH_ICON_URL = '/img/radio-icons/qth-antenna.svg';
+const ARC_POINT_COUNT = 48;
 
 export default {
     name: 'QSOMapComponent',
-    props: ['mapboxKey', 'config'],
+    props: ['mapboxKey', 'config', 'qth'],
     data() {
         return {
             loaded: false,
@@ -219,6 +275,8 @@ export default {
             showHelp: false,
             searchTimeout: null,
             loadRequestId: 0,
+            selectionAnimationId: 0,
+            selectionAnimationTimers: [],
         }
     },
     mounted() {
@@ -228,6 +286,7 @@ export default {
     },
     beforeUnmount() {
         clearTimeout(this.searchTimeout);
+        this.clearSelectionAnimation();
         this.activePopup?.remove();
         this.mapObject?.remove();
     },
@@ -251,6 +310,12 @@ export default {
             this.mapObject.on('load', () => {
                 this.loaded = true;
                 this.onMapLoad(this.mapObject)
+            });
+            this.mapObject.on('error', (event) => {
+                console.error(event.error ?? event);
+            });
+            this.mapObject.on('styleimagemissing', (event) => {
+                this.registerMissingStyleImage(this.mapObject, event.id);
             });
         },
         loadQsos() {
@@ -307,34 +372,45 @@ export default {
             }
 
             this.updateMapHighlight();
+            this.updateSelectedQsoPath();
         },
-        onMapLoad(map) {
-            map.loadImage('/img/map-pin.png', (error, image) => {
-                if (error) {
-                    console.error(error);
-                    return;
-                }
-
-                if (! map.hasImage('pin')) {
-                    map.addImage('pin', image)
-                }
-            });
-            map.loadImage('/img/pota-logo.png', (error, image) => {
-                if (error) {
-                    console.error(error);
-                    return;
-                }
-
-                if (! map.hasImage('tree')) {
-                    map.addImage('tree', image)
-                }
-            });
+        async onMapLoad(map) {
+            await this.registerMapIcons(map);
             map.addSource('qsos', {
+                type: 'geojson',
+                data: EMPTY_FEATURE_COLLECTION,
+            });
+            map.addSource('qth', {
+                type: 'geojson',
+                data: this.qthFeatureCollection(),
+            });
+            map.addSource('selected-qso-path', {
                 type: 'geojson',
                 data: EMPTY_FEATURE_COLLECTION,
             });
 
             const recencyScore = () => ['to-number', ['get', 'recency_score'], 0.35];
+            map.addLayer({
+                'id': 'selected-qso-path-casing',
+                'type': 'line',
+                'source': 'selected-qso-path',
+                'paint': {
+                    'line-color': '#ffffff',
+                    'line-width': 8,
+                    'line-opacity': 0.88,
+                },
+            });
+            map.addLayer({
+                'id': 'selected-qso-path',
+                'type': 'line',
+                'source': 'selected-qso-path',
+                'paint': {
+                    'line-color': '#0f766e',
+                    'line-width': 4,
+                    'line-opacity': 0.9,
+                    'line-dasharray': [1.5, 1],
+                },
+            });
             map.addLayer({
                 'id': 'qso-recency',
                 'type': 'circle',
@@ -348,14 +424,7 @@ export default {
                         0.5, 9,
                         1, 18,
                     ],
-                    'circle-color': [
-                        'interpolate',
-                        ['linear'],
-                        recencyScore(),
-                        0, '#64748b',
-                        0.55, '#fbbf24',
-                        1, '#f97316',
-                    ],
+                    'circle-color': ['to-color', ['get', 'band_color'], '#64748b'],
                     'circle-opacity': [
                         'interpolate',
                         ['linear'],
@@ -371,7 +440,7 @@ export default {
                         0, 0.9,
                         1, 1.35,
                     ],
-                    'circle-stroke-color': '#ffffff',
+                    'circle-stroke-color': ['to-color', ['get', 'band_color'], '#64748b'],
                     'circle-stroke-opacity': [
                         'interpolate',
                         ['linear'],
@@ -403,22 +472,52 @@ export default {
                 },
             });
             map.addLayer({
+                'id': 'qso-badge',
+                'type': 'circle',
+                'source': 'qsos',
+                'paint': {
+                    'circle-radius': [
+                        'interpolate',
+                        ['linear'],
+                        recencyScore(),
+                        0, 10,
+                        0.6, 12,
+                        1, 15,
+                    ],
+                    'circle-color': ['to-color', ['get', 'band_color'], '#64748b'],
+                    'circle-opacity': [
+                        'interpolate',
+                        ['linear'],
+                        recencyScore(),
+                        0, 0.55,
+                        0.5, 0.8,
+                        1, 1,
+                    ],
+                    'circle-stroke-color': '#ffffff',
+                    'circle-stroke-width': 1.5,
+                    'circle-stroke-opacity': [
+                        'interpolate',
+                        ['linear'],
+                        recencyScore(),
+                        0, 0.55,
+                        0.5, 0.8,
+                        1, 1,
+                    ],
+                },
+            });
+            map.addLayer({
                 'id': 'qsos',
                 'type': 'symbol',
                 'source': 'qsos',
                 'layout': {
-                    'icon-image': '{icon}',
+                    'icon-image': ['coalesce', ['image', ['get', 'mode_icon']], ['image', 'mode-other']],
                     'icon-size': [
-                        '*',
-                        ['to-number', ['get', 'icon_size'], 0.025],
-                        [
-                            'interpolate',
-                            ['linear'],
-                            recencyScore(),
-                            0, 0.85,
-                            0.6, 1,
-                            1, 1.15,
-                        ],
+                        'interpolate',
+                        ['linear'],
+                        recencyScore(),
+                        0, 0.3,
+                        0.6, 0.38,
+                        1, 0.48,
                     ],
                     'icon-allow-overlap': true,
                 },
@@ -433,11 +532,33 @@ export default {
                     ],
                 }
             });
+            map.addLayer({
+                'id': 'qth',
+                'type': 'symbol',
+                'source': 'qth',
+                'layout': {
+                    'icon-image': 'qth-antenna',
+                    'icon-size': 0.4,
+                    'icon-allow-overlap': true,
+                    'text-field': ['get', 'label'],
+                    'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+                    'text-size': 12,
+                    'text-anchor': 'top',
+                    'text-offset': [0, 1.45],
+                    'text-allow-overlap': true,
+                },
+                'paint': {
+                    'text-color': '#0f172a',
+                    'text-halo-color': '#ffffff',
+                    'text-halo-width': 1.25,
+                },
+            });
 
-            const qsoLayers = ['qsos', 'qso-highlight', 'qso-recency'];
+            const qsoLayers = ['qsos', 'qso-badge', 'qso-highlight', 'qso-recency'];
             map.on('click', (event) => {
                 const features = map.queryRenderedFeatures(event.point, {layers: qsoLayers});
                 if (features.length === 0) {
+                    this.deselectContact();
                     return;
                 }
 
@@ -445,6 +566,7 @@ export default {
                 this.selectContact(feature, {
                     scrollRow: true,
                     popupLngLat: event.lngLat,
+                    animate: true,
                 });
             });
             map.on('mousemove', (event) => {
@@ -456,15 +578,92 @@ export default {
             });
             this.loadQsos();
         },
+        registerMapIcons(map) {
+            return Promise.all([
+                ...Object.entries(MODE_ICON_URLS).map(([name, url]) => this.registerSvgIcon(map, name, url)),
+                this.registerSvgIcon(map, 'qth-antenna', QTH_ICON_URL),
+            ]);
+        },
+        registerMissingStyleImage(map, name) {
+            const url = MODE_ICON_URLS[name] ?? (name === 'qth-antenna' ? QTH_ICON_URL : null);
+
+            if (url !== null) {
+                this.registerSvgIcon(map, name, url);
+            }
+        },
+        registerSvgIcon(map, name, url) {
+            if (map.hasImage(name)) {
+                return Promise.resolve();
+            }
+
+            return new Promise((resolve) => {
+                const timeout = window.setTimeout(resolve, 1000);
+                const image = new Image(128, 128);
+                image.onload = () => {
+                    window.clearTimeout(timeout);
+
+                    if (! map.hasImage(name)) {
+                        map.addImage(name, image, {pixelRatio: 2});
+                    }
+
+                    resolve();
+                };
+                image.onerror = (error) => {
+                    window.clearTimeout(timeout);
+                    console.error(error);
+                    resolve();
+                };
+                image.src = url;
+            });
+        },
+        qthFeatureCollection() {
+            const coordinates = this.qthCoordinates();
+
+            if (coordinates === null) {
+                return EMPTY_FEATURE_COLLECTION;
+            }
+
+            return {
+                type: 'FeatureCollection',
+                features: [
+                    {
+                        type: 'Feature',
+                        geometry: {
+                            type: 'Point',
+                            coordinates,
+                        },
+                        properties: {
+                            label: this.qth?.label ?? 'Approx. QTH',
+                        },
+                    },
+                ],
+            };
+        },
+        qthCoordinates() {
+            const lat = Number(this.qth?.lat);
+            const lng = Number(this.qth?.lng);
+
+            if (! Number.isFinite(lat) || ! Number.isFinite(lng)) {
+                return null;
+            }
+
+            if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+                return null;
+            }
+
+            return [lng, lat];
+        },
         selectContactFromTable(feature) {
             this.selectContact(feature, {
                 fly: true,
                 scrollMap: true,
+                animate: true,
             });
         },
         selectContact(feature, options = {}) {
             this.selectedContactId = this.contactId(feature);
             this.updateMapHighlight();
+            this.updateSelectedQsoPath(feature);
 
             if (options.scrollRow) {
                 this.$nextTick(() => {
@@ -486,12 +685,121 @@ export default {
 
             this.focusFeatureOnMap(feature, options);
         },
+        deselectContact() {
+            if (this.selectedContactId === null) {
+                return;
+            }
+
+            this.selectedContactId = null;
+            this.clearSelectionAnimation();
+            this.activePopup?.remove();
+            this.updateSelectedQsoPath();
+            this.updateMapHighlight();
+        },
+        updateSelectedQsoPath(feature = null) {
+            const source = this.mapObject?.getSource?.('selected-qso-path');
+
+            if (! source) {
+                return;
+            }
+
+            source.setData(this.selectedQsoPathFeatureCollection(feature));
+        },
+        selectedQsoPathFeatureCollection(feature = null) {
+            const qthCoordinates = this.qthCoordinates();
+            const selectedFeature = feature
+                ?? this.tableContacts.find((contact) => this.contactId(contact) === this.selectedContactId);
+            const selectedCoordinates = selectedFeature?.geometry?.coordinates;
+
+            if (
+                qthCoordinates === null
+                || ! this.isCoordinatePair(selectedCoordinates)
+            ) {
+                return EMPTY_FEATURE_COLLECTION;
+            }
+
+            return {
+                type: 'FeatureCollection',
+                features: [
+                    {
+                        type: 'Feature',
+                        geometry: {
+                            type: 'LineString',
+                            coordinates: this.generateArcCoordinates(qthCoordinates, selectedCoordinates),
+                        },
+                        properties: {},
+                    },
+                ],
+            };
+        },
+        generateArcCoordinates(start, end) {
+            const startLng = Number(start[0]);
+            const startLat = Number(start[1]);
+            const endLng = this.unwrapLongitude(startLng, end[0]);
+            const endLat = Number(end[1]);
+            const dx = endLng - startLng;
+            const dy = endLat - startLat;
+            const distance = Math.sqrt((dx * dx) + (dy * dy));
+
+            if (distance === 0) {
+                return [start, end];
+            }
+
+            const curve = Math.min(Math.max(distance * 0.22, 1.25), 16);
+            let normalLng = -dy / distance;
+            let normalLat = dx / distance;
+
+            if (normalLat < 0) {
+                normalLng *= -1;
+                normalLat *= -1;
+            }
+
+            const controlLng = startLng + (dx / 2) + (normalLng * curve);
+            const controlLat = startLat + (dy / 2) + (normalLat * curve);
+            const coordinates = [];
+
+            for (let index = 0; index <= ARC_POINT_COUNT; index += 1) {
+                const t = index / ARC_POINT_COUNT;
+                const inverse = 1 - t;
+                const lng = (inverse * inverse * startLng)
+                    + (2 * inverse * t * controlLng)
+                    + (t * t * endLng);
+                const lat = (inverse * inverse * startLat)
+                    + (2 * inverse * t * controlLat)
+                    + (t * t * endLat);
+
+                coordinates.push([lng, lat]);
+            }
+
+            return coordinates;
+        },
+        unwrapLongitude(originLng, targetLng) {
+            let lng = Number(targetLng);
+
+            while (Math.abs(lng - originLng) > 180) {
+                lng += lng > originLng ? -360 : 360;
+            }
+
+            return lng;
+        },
+        isCoordinatePair(value) {
+            return Array.isArray(value)
+                && value.length >= 2
+                && Number.isFinite(Number(value[0]))
+                && Number.isFinite(Number(value[1]));
+        },
         focusFeatureOnMap(feature, options = {}) {
             if (! this.mapObject || ! feature?.geometry?.coordinates) {
                 return;
             }
 
             const coordinates = this.popupCoordinates(feature, options.popupLngLat);
+            const qthCoordinates = this.qthCoordinates();
+
+            if (options.animate && qthCoordinates !== null && this.isCoordinatePair(coordinates)) {
+                this.animateSelectedContact(feature, qthCoordinates, coordinates);
+                return;
+            }
 
             if (options.fly) {
                 this.mapObject.flyTo({
@@ -502,6 +810,81 @@ export default {
             }
 
             this.openPopup(feature, coordinates);
+        },
+        animateSelectedContact(feature, qthCoordinates, contactCoordinates) {
+            this.clearSelectionAnimation();
+            this.activePopup?.remove();
+
+            const animationId = ++this.selectionAnimationId;
+            const qthLng = Number(qthCoordinates[0]);
+            const qthLat = Number(qthCoordinates[1]);
+            const contactLng = Number(contactCoordinates[0]);
+            const contactLat = Number(contactCoordinates[1]);
+
+            if (qthLng === contactLng && qthLat === contactLat) {
+                this.mapObject.flyTo({
+                    center: contactCoordinates,
+                    zoom: Math.max(this.mapObject.getZoom(), 5.75),
+                    duration: 650,
+                    essential: true,
+                });
+                this.queueSelectionAnimation(() => this.openPopup(feature, contactCoordinates), 675);
+                return;
+            }
+
+            this.mapObject.fitBounds(this.selectionBounds(qthCoordinates, contactCoordinates), {
+                padding: {
+                    top: 96,
+                    right: 96,
+                    bottom: 96,
+                    left: 96,
+                },
+                maxZoom: 4.75,
+                duration: 850,
+                essential: true,
+            });
+
+            this.queueSelectionAnimation(() => {
+                if (animationId !== this.selectionAnimationId) {
+                    return;
+                }
+
+                this.mapObject.easeTo({
+                    center: contactCoordinates,
+                    zoom: Math.max(this.mapObject.getZoom(), 5.75),
+                    duration: 700,
+                    essential: true,
+                });
+            }, 875);
+
+            this.queueSelectionAnimation(() => {
+                if (animationId === this.selectionAnimationId) {
+                    this.openPopup(feature, contactCoordinates);
+                }
+            }, 1525);
+        },
+        selectionBounds(start, end) {
+            const startLng = Number(start[0]);
+            const startLat = Number(start[1]);
+            const endLng = this.unwrapLongitude(startLng, end[0]);
+            const endLat = Number(end[1]);
+
+            return [
+                [Math.min(startLng, endLng), Math.min(startLat, endLat)],
+                [Math.max(startLng, endLng), Math.max(startLat, endLat)],
+            ];
+        },
+        queueSelectionAnimation(callback, delay) {
+            const timer = window.setTimeout(() => {
+                this.selectionAnimationTimers = this.selectionAnimationTimers.filter((item) => item !== timer);
+                callback();
+            }, delay);
+
+            this.selectionAnimationTimers.push(timer);
+        },
+        clearSelectionAnimation() {
+            this.selectionAnimationTimers.forEach((timer) => window.clearTimeout(timer));
+            this.selectionAnimationTimers = [];
         },
         popupCoordinates(feature, lngLat = null) {
             const coordinates = feature.geometry.coordinates.slice();
@@ -523,6 +906,7 @@ export default {
         },
         buildPopupDescription(properties) {
             const mode = escape(properties.mode);
+            const modeLabel = escape(properties.mode_label);
             const band = escape(properties.band);
             const toCallsign = escape(properties.to_callsign);
             const location = escape(properties.display_location ?? properties.to_country ?? '');
@@ -530,6 +914,9 @@ export default {
             const frequency = escape(properties.frequency);
             const rstReceived = escape(properties.rst_received);
             const toGrid = escape(properties.to_grid);
+            const parkReference = escape(properties.park_reference);
+            const parkName = escape(properties.park_name);
+            const parkLocation = escape(properties.park_location);
             const distance = escape(this.formatDistance(
                 properties.distance,
                 properties.bearing_cardinal,
@@ -541,10 +928,17 @@ export default {
             html += `<div><b>${mode} QSO w/ ${toCallsign}</b></div>`;
             html += `<div><b>Date:</b> ${date}</div>`;
             html += `<div><b>Band:</b> ${band}</div>`;
+            if (modeLabel !== '' && modeLabel !== mode) {
+                html += `<div><b>Mode Type:</b> ${modeLabel}</div>`;
+            }
             html += `<div><b>Frequency:</b> ${frequency} MHz</div>`;
 
             if (location !== '') {
                 html += `<div><b>Location:</b> ${location}</div>`;
+            }
+            if (properties.category === 'POTA' && (parkReference !== '' || parkName !== '' || parkLocation !== '')) {
+                const parkDetails = [parkReference, parkName, parkLocation].filter(Boolean).join(' - ');
+                html += `<div><b>POTA:</b> ${parkDetails}</div>`;
             }
             if (rstReceived !== '') {
                 html += `<div><b>RST Received:</b> ${rstReceived}</div>`;
@@ -586,8 +980,8 @@ export default {
                 this.selectedContactId !== null
                 && ! this.tableContacts.some((feature) => this.contactId(feature) === this.selectedContactId)
             ) {
-                this.selectedContactId = null;
-                this.activePopup?.remove();
+                this.deselectContact();
+                return;
             }
 
             this.updateMapHighlight();
@@ -779,6 +1173,12 @@ export default {
         modeOptions() {
             return ['All', ...this.modes];
         },
+        bandLegendItems() {
+            return BAND_LEGEND_ITEMS;
+        },
+        modeLegendItems() {
+            return MODE_LEGEND_ITEMS;
+        },
         hasActiveFilters() {
             return this.searchTerm !== ''
                 || this.currentBand !== DEFAULT_BAND
@@ -802,6 +1202,29 @@ export default {
     display: inline-block;
     line-height: 1;
     transform-origin: center;
+}
+
+.legend-band-swatch {
+    display: inline-block;
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 9999px;
+}
+
+.legend-mode-icon {
+    display: inline-flex;
+    width: 1rem;
+    height: 1rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background-color: #111827;
+}
+
+.legend-mode-icon img {
+    width: 1rem;
+    height: 1rem;
+    display: block;
 }
 
 @media (max-width: 1279px) {
