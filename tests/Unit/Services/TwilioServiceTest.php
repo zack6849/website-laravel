@@ -115,7 +115,9 @@ class TwilioServiceTest extends TestCase
                 ])
                 ->andReturn(new Response(200, '{}', null))->once();
         });
-        (new TwilioService($clientMock))->getTwilioInformationForPhoneNumber($phoneNumber);
+        $this->app->instance(Client::class, $clientMock);
+
+        $this->service->getTwilioInformationForPhoneNumber($phoneNumber);
     }
 
     #[Test]

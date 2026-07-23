@@ -12,6 +12,7 @@ use Livewire\Livewire;
 use Mockery;
 use Sentry\Laravel\ServiceProvider as SentryServiceProvider;
 use Sentry\Laravel\Tracing\ServiceProvider as SentryTracingServiceProvider;
+use Twilio\Http\CurlClient;
 use Twilio\Rest\Client;
 
 class AppServiceProvider extends ServiceProvider
@@ -39,7 +40,17 @@ class AppServiceProvider extends ServiceProvider
         Livewire::addPersistentMiddleware(EnsureUserIsAdmin::class);
 
         $this->app->bind(Client::class, function () {
-            return new Client(config('twilio.sid'), config('twilio.token'));
+            // The Twilio SDK's CurlClient defaults to a 60s timeout with no
+            // override anywhere else in the app, so an uncached lookup (which
+            // chains through Twilio's Lookup API + the Ekata reverse-phone
+            // add-on) can silently hang a web request for up to a minute if
+            // either upstream is slow. Fail faster instead.
+            $httpClient = new CurlClient([
+                CURLOPT_TIMEOUT => config('twilio.lookup_timeout_seconds', 20),
+                CURLOPT_CONNECTTIMEOUT => config('twilio.lookup_connect_timeout_seconds', 5),
+            ]);
+
+            return new Client(config('twilio.sid'), config('twilio.token'), null, null, $httpClient);
         });
 
         Gate::define('viewPulse', function (User $user) {

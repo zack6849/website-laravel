@@ -13,12 +13,7 @@ use Twilio\Rest\Client;
 
 class TwilioService
 {
-
-    public function __construct(
-        private Client $twilioClient,
-    )
-    {
-    }
+    private ?Client $twilioClient = null;
 
     //only logged-in (trusted) requesters get the paid identity/address tier; anonymous
     //visitors get carrier/line-type/CNAM only. Centralized here since performLookup()'s
@@ -174,13 +169,18 @@ class TwilioService
      */
     public function getTwilioInformationForPhoneNumber(string $phoneNumber): array
     {
-        $result = $this->twilioClient->lookups->v1->phoneNumbers($phoneNumber)->fetch([
+        $result = $this->twilioClient()->lookups->v1->phoneNumbers($phoneNumber)->fetch([
             'type' => ['carrier', 'caller-name'],
             'addOns' => [
                 'ekata_reverse_phone',
             ]
         ]);
         return $result->toArray();
+    }
+
+    private function twilioClient(): Client
+    {
+        return $this->twilioClient ??= resolve(Client::class);
     }
 
     /**

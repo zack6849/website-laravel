@@ -38,7 +38,7 @@
         "sentry/sentry-laravel": "^4.10",
         "symfony/http-client": "^7.2",
         "symfony/mailgun-mailer": "^7.2",
-        "twilio/sdk": "^6.4"
+        "twilio/sdk": "^8"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.14",

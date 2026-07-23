@@ -14,6 +14,7 @@ use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
+use Twilio\Rest\Client;
 
 class PublicPhoneLookupTest extends TestCase
 {
@@ -58,6 +59,18 @@ class PublicPhoneLookupTest extends TestCase
             ->test(PhoneNumberLookup::class)
             ->assertSeeText("You have {$user->lookup_limit} lookups remaining")
             ->assertSet('dailyLimit', $user->lookup_limit);
+    }
+
+    #[Test]
+    public function initialRenderDoesNotResolveTheTwilioClient(): void
+    {
+        $this->app->bind(Client::class, function () {
+            $this->fail('The Twilio client should only be resolved when a lookup is performed.');
+        });
+
+        Livewire::test(PhoneNumberLookup::class)
+            ->assertSeeText("You have {$this->limit} lookups remaining")
+            ->assertSet('dailyLimit', $this->limit);
     }
 
     #[Test]
